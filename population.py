@@ -5,7 +5,7 @@ from random import choice
 from string import ascii_uppercase
 from sys import path
 
-from neuronet import Neuronet
+from .neuronet import Neuronet
 
 
 def unique_uppcase_strings(strings_number: int, chars_number: int):
