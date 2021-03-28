@@ -1,31 +1,5 @@
 """The Popolation module."""
 
-import sqlite3
-from random import choice
-from string import ascii_uppercase
-from sys import path
-
-from .neuronet import Neuronet
-
-
-def unique_uppcase_strings(strings_number: int, chars_number: int):
-    """[summary]
-
-    Args:
-        strings_number (int): [description]
-        nsymbols (int): [description]
-
-    Returns:
-        [type]: [description]
-    """
-    strings_list = set()
-    while len(strings_list) < strings_number:
-        string = ''
-        for _character_num in range(chars_number):
-            string += choice(ascii_uppercase)
-        strings_list.add(string)
-    return strings_list
-
 
 class Population(object):
     """Class of ANN population."""
@@ -100,14 +74,3 @@ class Population(object):
             Population: the population of neuronets
         """
         return Population(file_path)
-
-
-    def tich(self, prop_func: callable, dataset_file: str, error: float, mort: int, mut: int):
-        """[summary]
-
-        Args:
-            dataset_file (str): dataset filepath
-            error (float): [description]
-            mort (int): [description]
-            mut (int): [description]
-        """
