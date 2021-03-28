@@ -1,33 +1,25 @@
-from random import uniform
+from numpy import mean
 
-from numpy import exp
-
-
-def sig(neuro_sum: float):
-    """Return the sigmoid function result.
-
-    Args:
-        neuro_sum: a weighted sum of neurons
-
-    Returns:
-        The return value in float type
-
-    """
-    return 2 / (1 + exp(-neuro_sum)) - 1
+from .utils import generate_uniform, sig
 
 
 class Weight():
-    def __init__(self):
-        self.value = uniform(-1, 1)
+    def __init__(self, value_generator=generate_uniform):
+        self.value = value_generator()
 
     def __repr__(self):
         return f'< Weight: {self.value} >'
 
 
 class Neuron:
-    def __init__(self, inputs_number: int, transmition_function=sig):
+    def __init__(
+        self, inputs_number: int, transmition_function=sig,
+            value_generator=generate_uniform,
+    ):
         self.transmition_function = transmition_function
-        self.weights = [Weight() for weight in range(inputs_number)]
+        self.weights = [
+            Weight(value_generator=value_generator) for weight in range(inputs_number)
+            ]
 
     def get_output(self, inputs_values: list) -> float:
         weighted_values = list()
@@ -47,13 +39,14 @@ class BiasNeuron(Neuron):
 class Layer:
     def __init__(
         self, last_layer_neurons_number: int, neurons_number: int,
-        transmition_function=sig,
+            transmition_function=sig, value_generator=generate_uniform,
     ):
-        self.neurons = [BiasNeuron()]
+        self.neurons = [BiasNeuron(value_generator=value_generator)]
         for neuron_number in range(neurons_number-1):
             neuron = Neuron(
                 inputs_number=last_layer_neurons_number,
                 transmition_function=transmition_function,
+                value_generator=value_generator,
             )
             self.neurons.append(neuron)
 
@@ -62,7 +55,10 @@ class Layer:
 
 
 class Perceptron:
-    def __init__(self, structure: list, transmition_function=sig):
+    def __init__(
+        self, structure: list, transmition_function=sig,
+            value_generator=generate_uniform,
+    ):
         structure = [neurons_number + 1 for neurons_number in structure]
         self.layers = list()
         for layer_number, neurons_number in enumerate(structure):
@@ -73,6 +69,7 @@ class Perceptron:
                     neurons_number=neurons_number,
                     last_layer_neurons_number=structure[layer_number - 1],
                     transmition_function=transmition_function,
+                    value_generator=value_generator,
                 ),
             )
 
@@ -84,3 +81,21 @@ class Perceptron:
         return resoults[1:]
 
 
+class Population:
+    def __init__(self, size: int, neuronet_type: type, arguments: list):
+        self.neuronets = [neuronet_type(*arguments) for item in range(size)]
+
+    def get_best_neuronet(
+        self, dataset: dict, mortality: float,
+            success: float, mutability: float,
+    ):
+        successes = list()
+        for neuronet, suc in self.neuronets:
+            dataset_parts_errors = list()
+            for dict_key, dict_value in dataset.items():
+                outputs = neuronet.get_outputs(dict_key)
+                atomic_errors = list()
+                for number, value in enumerate(dict_value):
+                    atomic_errors.append(abs((value - outputs[number]) / value))
+                dataset_parts_errors.append(mean(atomic_errors))
+            successes.append(1 - mean(dataset_parts_errors))
