@@ -1,5 +1,5 @@
 from unpacking_flatten_lists.funcs import niccolum_flatten
-
+from population import Population
 from utils import generate_uniform, sig
 
 
@@ -104,6 +104,28 @@ class Perceptron:
                 )
             return calibrated_resoults
         return uncalibrated_resoults
+
+    def tich_by_genetic(
+        self, dataset: list, size=100, fertility=2, success=0.75,
+        mutability=0.1,
+    ) -> object:
+        population = Population(
+            size=size - 1,
+            neuronet_type=self.__class__,
+            arguments=dict(
+                structure=self.structure,
+                transmition_function=self.all_neurons[1].transmition_function,
+                value_generator=self.all_weights[0].value_generator,
+                сalibration_functions=self.сalibration_functions,
+            ),
+        )
+        population.neuronets.append(self)
+        return population.tich(
+            dataset=dataset, fertility=fertility, success=success,
+            mutability=mutability,
+        )
+
+
 
     @classmethod
     def init_from_weights(
