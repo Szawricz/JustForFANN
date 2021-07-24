@@ -22,6 +22,22 @@ def sig(neuro_sum: float):
     return 2 / (1 + exp(-neuro_sum)) - 1
 
 
+def make_linear_calibration_function(
+    min_value: float, max_value: float, rounding=False,
+):
+    if min_value >= max_value:
+        raise ValueError('max_value must be bigger then min_value!')
+
+    def linear_calibration_function(neuro_sum: float):
+        h = (max_value - min_value)
+        resoult = (h / 2) * (neuro_sum + 1) + min_value
+        if rounding:
+            return round(resoult)
+        return resoult
+    linear_calibration_function.values_amplitude = max_value - min_value
+    return linear_calibration_function
+
+
 def relu(neuro_sum: float):
     if neuro_sum < 0:
         return 0
@@ -60,25 +76,31 @@ def cross_over(first_neuronet, second_neuronet, mutability) -> object:
         if uniform(0, 1) < mutability:
             child_raw_weight = first_weight.value_generator()
         child_raw_weights.append(child_raw_weight)
+    transmition_function = first_neuronet.all_neurons[1].transmition_function
     return first_neuronet.__class__.init_from_weights(
         weights=child_raw_weights,
         structure=first_neuronet.structure,
         сalibration_functions=first_neuronet.сalibration_functions,
-        transmition_function=first_neuronet.all_neurons[1].transmition_function,
+        transmition_function=transmition_function,
     )
 
 
 def get_succeses(neuronets, dataset):
     successes = list()
     for neuronet in neuronets:
+        neuronet.сalibration_functions
         dataset_cases_errors = list()
         for dataset_inputs, dataset_outputs in dataset:
             outputs = neuronet.get_outputs(dataset_inputs)
             output_errors = list()
             for number, value in enumerate(dataset_outputs):
-                output_errors.append(abs(value - outputs[number]))
+                amplitude = 2
+                if neuronet.сalibration_functions:
+                    amplitude = neuronet\
+                        .сalibration_functions[number].values_amplitude
+                output_errors.append(abs(value - outputs[number]) / amplitude)
             dataset_cases_errors.append(max(output_errors))
-        successes.append(1 - max(dataset_cases_errors) / 2)
+        successes.append(1 - max(dataset_cases_errors))
     return successes
 
 
