@@ -1,19 +1,6 @@
-from numpy import sign
-
 from perceptron import Perceptron
-from population import Population
-from utils import generate_sign
+from utils import make_simple_structure
 
-pop = Population(
-    10000,
-    Perceptron,
-    dict(
-        structure=[2, 3, 1],
-        transmition_function=sign,
-        value_generator=generate_sign,
-        сalibration_functions=[round],
-    ),
-)
 dataset = (
     (
         (0, 0),
@@ -32,4 +19,9 @@ dataset = (
         (0,),
     ),
 )
-print(pop.tich(dataset, mutability=0.02).get_outputs([0, 1]))
+
+net = Perceptron(
+    make_simple_structure(2, 1, 1),
+).tich_by_genetic(dataset=dataset, size=10000)
+
+print(net.get_outputs([0, 0]))
