@@ -22,6 +22,4 @@ dataset = (
 
 net = Perceptron(
     make_simple_structure(2, 1, 1),
-).tich_by_genetic(dataset=dataset, size=10000)
-
-print(net.get_outputs([0, 0]))
+).tich_by_genetic(dataset, 10000)

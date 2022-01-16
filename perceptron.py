@@ -24,23 +24,23 @@ class Neuron:
             value_generator=generate_uniform,
     ):
         self.transmition_function = transmition_function
-        self.weights = [
-            Weight(value_generator=value_generator) for weight in range(inputs_number)
-        ]
+        self.weights = list()
+        for weight in range(inputs_number):
+            self.weights.append(Weight(value_generator=value_generator))
 
     def get_output(self, inputs_values: list) -> float:
         weighted_values = list()
         for weight_number, weight in enumerate(self.weights):
-            weighted_values.append(inputs_values[weight_number]*weight.value)
+            weighted_values.append(inputs_values[weight_number] * weight.value)
         return self.transmition_function(sum(weighted_values))
 
 
 class BiasNeuron(Neuron):
-    def __init__(self, value_generator):
+    def __init__(self):
         super().__init__(
             inputs_number=0,
             transmition_function=None,
-            value_generator=value_generator,
+            value_generator=None,
         )
 
     def get_output(self, *args) -> int:
@@ -52,7 +52,7 @@ class Layer:
         self, last_layer_neurons_number: int, neurons_number: int,
         transmition_function=sig, value_generator=generate_uniform,
     ):
-        self.neurons = [BiasNeuron(value_generator=value_generator)]
+        self.neurons = [BiasNeuron()]
         for neuron_number in range(neurons_number-1):
             neuron = Neuron(
                 inputs_number=last_layer_neurons_number,
@@ -124,8 +124,6 @@ class Perceptron:
             dataset=dataset, fertility=fertility, success=success,
             mutability=mutability,
         )
-
-
 
     @classmethod
     def init_from_weights(
