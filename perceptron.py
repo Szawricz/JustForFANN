@@ -1,50 +1,7 @@
 from unpacking_flatten_lists.funcs import niccolum_flatten
+
 from population import Population
-from utils import generate_uniform, sig
 
-
-class Weight():
-    def __init__(self, value_generator=generate_uniform):
-        self.value = value_generator()
-        self.value_generator = value_generator
-
-    @classmethod
-    def init_with_value(cls, value):
-        new_weight = cls()
-        new_weight.value = value
-        return new_weight
-
-    def __repr__(self):
-        return f'< Weight: {self.value} >'
-
-
-class Neuron:
-    def __init__(
-        self, inputs_number: int, transmition_function=sig,
-            value_generator=generate_uniform,
-    ):
-        self.transmition_function = transmition_function
-        self.weights = list()
-        for weight in range(inputs_number):
-            self.weights.append(Weight(value_generator=value_generator))
-
-    def get_output(self, inputs_values: list) -> float:
-        weighted_values = list()
-        for weight_number, weight in enumerate(self.weights):
-            weighted_values.append(inputs_values[weight_number] * weight.value)
-        return self.transmition_function(sum(weighted_values))
-
-
-class BiasNeuron(Neuron):
-    def __init__(self):
-        super().__init__(
-            inputs_number=0,
-            transmition_function=None,
-            value_generator=None,
-        )
-
-    def get_output(self, *args) -> int:
-        return 1
 
 
 class Layer:
