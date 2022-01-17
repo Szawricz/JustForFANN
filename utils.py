@@ -1,24 +1,10 @@
 from operator import itemgetter
 from random import choice, uniform
 
-from numpy import exp
-
 
 class NotToughtPopulation(BaseException):
     "The population is not thought yet"
-
-
-def sig(neuro_sum: float):
-    """Return the sigmoid function result.
-
-    Args:
-        neuro_sum: a weighted sum of neurons
-
-    Returns:
-        The return value in float type
-
-    """
-    return 2 / (1 + exp(-neuro_sum)) - 1
+    pass
 
 
 def heaviside(neuro_sum: float) -> int:
@@ -27,25 +13,7 @@ def heaviside(neuro_sum: float) -> int:
     return 0
 
 
-def make_linear_calibration_function(
-    min_value: float, max_value: float, rounding=False,
-):
-    if min_value >= max_value:
-        raise ValueError('max_value must be bigger then min_value!')
-
-    def linear_calibration_function(neuro_sum: float):
-        h = (max_value - min_value)
-        resoult = (h / 2) * (neuro_sum + 1) + min_value
-        if rounding:
-            return round(resoult)
-        return resoult
-    linear_calibration_function.values_amplitude = max_value - min_value
-    return linear_calibration_function
-
-
-def relu(neuro_sum: float):
-    if neuro_sum < 0:
-        return 0
+def linear(neuro_sum: float) -> float:
     return neuro_sum
 
 
@@ -53,8 +21,8 @@ def generate_uniform() -> float:
     return uniform(-1, 1)
 
 
-def generate_sign() -> int:
-    return choice([-1, 0, 1])
+def generate_reversed_uniform() -> float:
+    return 1 / uniform(-1, 1)
 
 
 def generate_0_or_1() -> int:
