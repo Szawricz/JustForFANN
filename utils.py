@@ -22,6 +22,12 @@ def sig(neuro_sum: float):
     return 2 / (1 + exp(-neuro_sum)) - 1
 
 
+def heaviside(neuro_sum: float, max_sun=None) -> int:
+    if max_sun is None and neuro_sum >= 0 or neuro_sum >= max_sun / 2:
+        return 1
+    return 0
+
+
 def make_linear_calibration_function(
     min_value: float, max_value: float, rounding=False,
 ):
@@ -50,6 +56,10 @@ def generate_uniform() -> float:
 
 def generate_sign() -> int:
     return choice([-1, 0, 1])
+
+
+def generate_0_or_1() -> int:
+    return choice([0, 1])
 
 
 def make_simple_structure(
