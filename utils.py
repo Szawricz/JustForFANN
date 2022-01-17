@@ -6,7 +6,6 @@ from numpy import exp
 
 class NotToughtPopulation(BaseException):
     "The population is not thought yet"
-    pass
 
 
 def sig(neuro_sum: float):
@@ -22,8 +21,8 @@ def sig(neuro_sum: float):
     return 2 / (1 + exp(-neuro_sum)) - 1
 
 
-def heaviside(neuro_sum: float, max_sun=None) -> int:
-    if max_sun is None and neuro_sum >= 0 or neuro_sum >= max_sun / 2:
+def heaviside(neuro_sum: float) -> int:
+    if neuro_sum >= 0:
         return 1
     return 0
 
