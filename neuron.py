@@ -1,4 +1,5 @@
-from .utils import generate_0_or_1, generate_uniform, heaviside
+from .utils import (generate_0_or_1, generate_reversed_uniform,
+                    generate_uniform, heaviside, linear)
 
 
 class Weight():
@@ -44,7 +45,7 @@ class InputNeuron(AbstractNeuron):
         )
 
 
-class MidLayerNeuron(AbstractNeuron):
+class InternalLayerNeuron(AbstractNeuron):
     def __init__(self, inputs_number: int):
         super().__init__(
             inputs_number=inputs_number,
@@ -52,11 +53,20 @@ class MidLayerNeuron(AbstractNeuron):
             value_generator=generate_0_or_1,
         )
 
-    def _get_weighted_sum(self, inputs_values: list):
+    def _get_weighted_sum(self, inputs_values: list) -> int:
         weighted_values = list()
         for weight_number, weight in enumerate(self.weights):
             weighted_values.append(inputs_values[weight_number] * weight.value)
         return sum(weighted_values) - len(weighted_values)
+
+
+class OutputNeuron(AbstractNeuron):
+    def __init__(self, inputs_number: int):
+        super().__init__(
+            inputs_number=inputs_number,
+            transmition_function=linear,
+            value_generator=generate_reversed_uniform,
+        )
 
 
 class BiasNeuron(AbstractNeuron):
