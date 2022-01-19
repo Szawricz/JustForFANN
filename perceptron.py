@@ -2,26 +2,6 @@ from unpacking_flatten_lists.funcs import niccolum_flatten
 
 from population import Population
 
-from .neuron import BiasNeuron, InputNeuron, InternalLayerNeuron, OutputNeuron
-
-
-class AbstractLayer:
-    def __init__(
-        self, last_layer_neurons_number: int, neurons_number: int,
-        transmition_function, value_generator,
-    ):
-        self.neurons = [BiasNeuron()]
-        for neuron_number in range(neurons_number-1):
-            neuron = Neuron(
-                inputs_number=last_layer_neurons_number,
-                transmition_function=transmition_function,
-                value_generator=value_generator,
-            )
-            self.neurons.append(neuron)
-
-    def get_outputs(self, inputs_values: list) -> list:
-        return [neuron.get_output(inputs_values) for neuron in self.neurons]
-
 
 class Perceptron:
     def __init__(
