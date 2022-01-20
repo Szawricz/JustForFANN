@@ -1,13 +1,17 @@
-from .neuron import (AbstractNeuron, BiasNeuron, InputNeuron,
-                     InternalLayerNeuron, OutputNeuron)
+from .neuron import BiasNeuron, InputNeuron, InternalLayerNeuron, OutputNeuron
 
 
 class AbstractLayer:
     def __init__(
-        self, last_layer_neurons_number: int, neurons_number: int, neuron_type,
+        self, last_layer_neurons_number: int,
+        neurons_number: int, neuron_type, with_bias=True,
     ):
-        self.neurons = [BiasNeuron()]
-        for _neuron_number in range(neurons_number-1):
+        if with_bias:
+            start_neurons = [BiasNeuron()]
+        else:
+            start_neurons = list()
+        self.neurons = start_neurons
+        for _neuron_number in range(neurons_number - with_bias):
             neuron = neuron_type(inputs_number=last_layer_neurons_number)
             self.neurons.append(neuron)
 
@@ -32,6 +36,6 @@ class InternalLayer(AbstractLayer):
 class OutputLayer(AbstractLayer):
     def __init__(self, last_layer_neurons_number: int, neurons_number: int):
         super().__init__(
-            last_layer_neurons_number, neurons_number, OutputNeuron,
+            last_layer_neurons_number, neurons_number,
+            OutputNeuron, with_bias=False,
         )
-        self.neurons.pop(0)
