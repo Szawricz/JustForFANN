@@ -2,25 +2,28 @@ from unpacking_flatten_lists.funcs import niccolum_flatten
 
 from population import Population
 
+from .layer import InputLayer, InternalLayer, OutputLayer
+
 
 class Perceptron:
-    def __init__(
-        self, structure: list, transmition_function=sig,
-        value_generator=generate_uniform, сalibration_functions=None,
-    ):
-        self.сalibration_functions = сalibration_functions
+    def __init__(self, structure: list):
         self.structure = structure
         interstructure = [neurons_number + 1 for neurons_number in structure]
+        interstructure[-1] -= 1
         self.layers = list()
         for layer_number, neurons_number in enumerate(interstructure):
             if layer_number == 0:
                 continue
+            if layer_number == 1:
+                layer = InputLayer
+            elif layer_number == len(interstructure) - 1:
+                layer = OutputLayer
+            else:
+                layer = InternalLayer
             self.layers.append(
-                Layer(
+                layer(
                     neurons_number=neurons_number,
                     last_layer_neurons_number=interstructure[layer_number - 1],
-                    transmition_function=transmition_function,
-                    value_generator=value_generator,
                 ),
             )
 
@@ -33,15 +36,7 @@ class Perceptron:
         resoults = inputs_values
         for layer in self.layers:
             resoults = layer.get_outputs(resoults)
-        uncalibrated_resoults = resoults[1:]
-        if self.сalibration_functions:
-            calibrated_resoults = list()
-            for position, output in enumerate(uncalibrated_resoults):
-                calibrated_resoults.append(
-                    self.сalibration_functions[position](output)
-                )
-            return calibrated_resoults
-        return uncalibrated_resoults
+        return resoults
 
     def tich_by_genetic(
         self, dataset: list, size=100, fertility=2, success=0.75,
