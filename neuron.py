@@ -23,7 +23,7 @@ class AbstractNeuron:
     ):
         self.transmition_function = transmition_function
         self.weights = list()
-        for weight in range(inputs_number):
+        for _weight in range(inputs_number):
             self.weights.append(Weight(value_generator=value_generator))
 
     def _get_weighted_sum(self, inputs_values: list):
