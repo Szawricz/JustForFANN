@@ -1,12 +1,14 @@
-from unpacking_flatten_lists.funcs import niccolum_flatten
+from sys import float_info
 
-from population import Population
+from iteration_utilities import deepflatten
 
 from .layer import InputLayer, InternalLayer, OutputLayer
+from .population import Population
 
 
 class Perceptron:
     def __init__(self, structure: list):
+        self.error = None
         self.structure = structure
         interstructure = [neurons_number + 1 for neurons_number in structure]
         interstructure[-1] -= 1
@@ -38,37 +40,34 @@ class Perceptron:
             resoults = layer.get_outputs(resoults)
         return resoults
 
+    def count_error(self, dataset):
+        resoults = list()
+        for dataset_inputs, dataset_outputs in dataset:
+            resoult_outputs = self.get_outputs(dataset_inputs)
+            output_errors = list()
+            for waited, real in list(zip(dataset_outputs, resoult_outputs)):
+                if waited == 0:
+                    waited = float_info.min
+                output_errors.append(1 - abs((waited - real) / waited))
+            resoults.append(max(output_errors))
+        self.error = max(resoults)
+
     def tich_by_genetic(
-        self, dataset: list, size=100, fertility=2, success=0.75,
+        self, dataset: list, size=100, fertility=2, error=0.25,
         mutability=0.1,
     ) -> object:
-        population = Population(
-            size=size - 1,
-            neuronet_type=self.__class__,
-            arguments=dict(
-                structure=self.structure,
-                transmition_function=self.all_neurons[1].transmition_function,
-                value_generator=self.all_weights[0].value_generator,
-                сalibration_functions=self.сalibration_functions,
-            ),
-        )
+        population = Population(size=size-1, neuronet=self)
         population.neuronets.append(self)
         return population.tich(
-            dataset=dataset, fertility=fertility, success=success,
-            mutability=mutability,
+            dataset=dataset, fertility=fertility,
+            error=error, mutability=mutability,
         )
 
     @classmethod
-    def init_from_weights(
-        cls, weights: list, structure: list, сalibration_functions=None,
-        transmition_function=sig,
-    ):
-        new_perceptron = cls(
-            structure, transmition_function=transmition_function,
-        )
+    def init_from_weights(cls, weights: list, structure: list):
+        new_perceptron = cls(structure)
         for position, weight in enumerate(new_perceptron.all_weights):
             weight.value = weights[position]
-        new_perceptron.сalibration_functions = сalibration_functions
         return new_perceptron
 
     @property
@@ -78,11 +77,11 @@ class Perceptron:
     @property
     def all_weights(self) -> list:
         neurons = self.all_neurons
-        weights = niccolum_flatten([neuron.weights for neuron in neurons])
+        weights = list(deepflatten([neuron.weights for neuron in neurons]))
         return weights
 
     @property
     def all_neurons(self) -> list:
         layers = self.layers
-        neurons = niccolum_flatten([layer.neurons for layer in layers])
+        neurons = list(deepflatten([layer.neurons for layer in layers]))
         return neurons
