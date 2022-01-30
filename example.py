@@ -1,5 +1,5 @@
-from perceptron import Perceptron
-from utils import make_simple_structure
+from .perceptron import Perceptron
+from .utils import make_simple_structure
 
 dataset = (
     (
@@ -21,5 +21,5 @@ dataset = (
 )
 
 net = Perceptron(
-    make_simple_structure(2, 1, 1),
+    make_simple_structure(2, 10, 10, 1),
 ).tich_by_genetic(dataset, 10000)
