@@ -1,12 +1,15 @@
 from math import ceil
 
-from utils import cross_over, get_neuronets_sorted_by_succes, get_succeses
+from more_itertools import sort_together
+
+from .utils import cross_over
 
 
 class Population:
-    def __init__(self, size: int, neuronet_type: type, arguments: dict):
-        self.neuronets = [neuronet_type(**arguments) for item in range(size)]
-        self.successes = list()
+    def __init__(self, size: int, neuronet: object):
+        neuronet_type = neuronet.__class__
+        structure = neuronet.structure
+        self.neuronets = [neuronet_type(structure) for _item in range(size)]
         self.generations = int()
 
     @property
@@ -14,21 +17,29 @@ class Population:
         return len(self.neuronets)
 
     @property
+    def errors(self) -> list:
+        return [neuronet.error for neuronet in self.neuronets]
+
+    @property
     def best_neuronet(self) -> object:
-        return self.neuronets[self.successes.index(max(self.successes))]
+        return self.neuronets[self.neuronets.index(min(self.errors))]
+
+    def sort_by_errors(self):
+        self.neuronets = sort_together(
+            [self.errors, self.neuronets], reverse=True,
+        )[1]
 
     def tich(
-        self, dataset: list, fertility=2, success=0.75, mutability=0.1,
+        self, dataset: list, fertility: int, error: float, mutability: float,
     ) -> object:
         while True:
             # Get successes:
-            self.successes = get_succeses(self.neuronets, dataset)
-            if max(self.successes) >= success:
+            for neuronet in self.neuronets:
+                neuronet.count_error(dataset)
+            if self.best_neuronet.error < error:
                 return self.best_neuronet
             # Sort neuronets by success:
-            self.neuronets = get_neuronets_sorted_by_succes(
-                self.successes, self.neuronets,
-            )
+            self.sort_by_errors()
             # Kill worst neuronets:
             mortality = fertility / (2 + fertility)
             dead_neuronets_number = ceil(self.size * mortality)
@@ -37,7 +48,7 @@ class Population:
             couples_number = ceil(dead_neuronets_number / fertility)
             last_couple_children_number = dead_neuronets_number % fertility
             couples_children_number = [
-                fertility for n in range(couples_number)]
+                fertility for _n in range(couples_number)]
             if last_couple_children_number != 0:
                 couples_children_number[0] = last_couple_children_number
             couples_members = list(reversed(winners_neuronets))[
@@ -52,9 +63,9 @@ class Population:
             # Crossingover
             children = list()
             for first, second, children_number in couples_and_child_numbers:
-                for child_number in range(children_number):
+                for _child_number in range(children_number):
                     children.append(cross_over(first, second, mutability))
             self.generations += 1
             print(self.generations)
-            print(max(self.successes))
+            print(min(self.errors))
             self.neuronets = winners_neuronets + children
