@@ -2,8 +2,8 @@ from sys import float_info
 
 from iteration_utilities import deepflatten
 
-from .layer import InputLayer, InternalLayer, OutputLayer
-from .population import Population
+from layer import InputLayer, InternalLayer, OutputLayer
+from population import Population
 
 
 class Perceptron:
@@ -46,15 +46,13 @@ class Perceptron:
             resoult_outputs = self.get_outputs(dataset_inputs)
             output_errors = list()
             for waited, real in list(zip(dataset_outputs, resoult_outputs)):
-                if waited == 0:
-                    waited = float_info.min
-                output_errors.append(1 - abs((waited - real) / waited))
+                output_errors.append(abs((waited - real) / 2))
             resoults.append(max(output_errors))
         self.error = max(resoults)
 
     def tich_by_genetic(
         self, dataset: list, size=100, fertility=2, error=0.25,
-        mutability=0.1,
+        mutability=0.25,
     ) -> object:
         population = Population(size=size-1, neuronet=self)
         population.neuronets.append(self)
