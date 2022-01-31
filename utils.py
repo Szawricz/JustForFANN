@@ -1,9 +1,25 @@
 from random import choice, uniform
 
+from numpy import exp
+
 
 class NotToughtPopulation(BaseException):
     "The population is not thought yet"
     pass
+
+
+def sig(neuro_sum: float) -> float:
+    """Return the sigmoid function result.
+    Args:
+        neuro_sum: a weighted sum of neurons
+    Returns:
+        The return value in float type
+    """
+    return 2 / (1 + exp(-neuro_sum)) - 1
+
+
+def softsign(neuro_sum: float) -> float:
+    return neuro_sum / (1 + abs(neuro_sum))
 
 
 def heaviside(neuro_sum: float) -> int:
@@ -22,6 +38,10 @@ def generate_uniform() -> float:
 
 def generate_reversed_uniform() -> float:
     return 1 / uniform(-1, 1)
+
+
+def generate_sign() -> int:
+    return choice([-1, 0, 1])
 
 
 def generate_0_or_1() -> int:
