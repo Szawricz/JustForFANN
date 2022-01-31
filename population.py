@@ -2,7 +2,7 @@ from math import ceil
 
 from more_itertools import sort_together
 
-from .utils import cross_over
+from utils import cross_over
 
 
 class Population:
@@ -22,12 +22,12 @@ class Population:
 
     @property
     def best_neuronet(self) -> object:
-        return self.neuronets[self.neuronets.index(min(self.errors))]
+        return self.neuronets[self.errors.index(min(self.errors))]
 
     def sort_by_errors(self):
-        self.neuronets = sort_together(
-            [self.errors, self.neuronets], reverse=True,
-        )[1]
+        self.neuronets = list(
+            sort_together([self.errors, self.neuronets], reverse=True,)[1],
+        )
 
     def tich(
         self, dataset: list, fertility: int, error: float, mutability: float,
@@ -67,5 +67,5 @@ class Population:
                     children.append(cross_over(first, second, mutability))
             self.generations += 1
             print(self.generations)
-            print(min(self.errors))
+            print(self.best_neuronet.error)
             self.neuronets = winners_neuronets + children
