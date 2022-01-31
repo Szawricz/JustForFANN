@@ -1,9 +1,8 @@
-from .utils import (generate_0_or_1, generate_reversed_uniform,
-                    generate_uniform, heaviside, linear)
+from utils import generate_sign, generate_uniform, heaviside, softsign
 
 
 class Weight():
-    def __init__(self, value_generator=generate_0_or_1):
+    def __init__(self, value_generator=generate_sign):
         self.value = value_generator()
         self.value_generator = value_generator
 
@@ -41,7 +40,7 @@ class InputNeuron(AbstractNeuron):
         super().__init__(
             inputs_number=inputs_number,
             transmition_function=heaviside,
-            value_generator=generate_uniform,
+            value_generator=generate_sign,
         )
 
 
@@ -50,22 +49,16 @@ class InternalLayerNeuron(AbstractNeuron):
         super().__init__(
             inputs_number=inputs_number,
             transmition_function=heaviside,
-            value_generator=generate_0_or_1,
+            value_generator=generate_sign,
         )
-
-    def _get_weighted_sum(self, inputs_values: list) -> int:
-        weighted_values = list()
-        for weight_number, weight in enumerate(self.weights):
-            weighted_values.append(inputs_values[weight_number] * weight.value)
-        return sum(weighted_values) - len(weighted_values)
 
 
 class OutputNeuron(AbstractNeuron):
     def __init__(self, inputs_number: int):
         super().__init__(
             inputs_number=inputs_number,
-            transmition_function=linear,
-            value_generator=generate_reversed_uniform,
+            transmition_function=softsign,
+            value_generator=generate_uniform,
         )
 
 
