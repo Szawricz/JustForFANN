@@ -1,4 +1,4 @@
-from .neuron import BiasNeuron, InputNeuron, InternalLayerNeuron, OutputNeuron
+from neuron import BiasNeuron, InputNeuron, InternalLayerNeuron, OutputNeuron
 
 
 class AbstractLayer:
