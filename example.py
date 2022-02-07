@@ -23,5 +23,5 @@ dataset = (
 
 net = Perceptron(make_simple_structure(2, 1, 3, 1))\
     .tich_by_genetic(dataset, size=100)\
-        .get_outputs((1, 0))[0]
-print(f'>> {round(net)}')
+        .all_weights
+print(f'>> {(net)}')
