@@ -40,7 +40,7 @@ class InputNeuron(AbstractNeuron):
         super().__init__(
             inputs_number=inputs_number,
             transmition_function=heaviside,
-            value_generator=generate_sign,
+            value_generator=generate_uniform,
         )
 
 
@@ -72,3 +72,15 @@ class BiasNeuron(AbstractNeuron):
 
     def get_output(self, *args) -> int:
         return 1
+
+
+class ControlCouple:
+    def __init__(self, inputs_number):
+        self.number = OutputNeuron(inputs_number)
+        self.value = OutputNeuron(inputs_number)
+
+    def get_outputs(self, inputs_values: list):
+        return [
+            self.number.get_output(inputs_values),
+            self.value.get_output(inputs_values),
+        ]
