@@ -43,6 +43,8 @@ class InputNeuron(AbstractNeuron):
             value_generator=generate_uniform,
         )
 
+class StopNeuuron(InputNeuron):
+    pass
 
 class InternalLayerNeuron(AbstractNeuron):
     def __init__(self, inputs_number: int):
