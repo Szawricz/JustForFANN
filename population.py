@@ -24,26 +24,31 @@ class Population:
     def best_neuronet(self) -> object:
         return self.neuronets[self.errors.index(min(self.errors))]
 
+
+    def get_dead_neuronets_number(self, fertility: int) -> int:
+        return ceil(self.size * fertility / (2 + fertility))
+
     def sort_by_errors(self):
         self.neuronets = list(
             sort_together([self.errors, self.neuronets], reverse=True,)[1],
         )
 
+    def count_errors(self, dataset):
+        for neuronet in self.neuronets:
+            neuronet.count_error(dataset)
+    
+
     def tich(
         self, dataset: list, fertility: int, error: float, mutability: float,
     ) -> object:
         while True:
-            # Get successes:
-            for neuronet in self.neuronets:
-                neuronet.count_error(dataset)
+            self.count_errors(dataset)
             if self.best_neuronet.error < error:
                 return self.best_neuronet
-            # Sort neuronets by success:
             self.sort_by_errors()
+            dead_neuronets_number = self.get_dead_neuronets_number(fertility)
             # Kill worst neuronets:
-            mortality = fertility / (2 + fertility)
-            dead_neuronets_number = ceil(self.size * mortality)
-            winners_neuronets = self.neuronets[dead_neuronets_number:]
+            self.neuronets = self.neuronets[dead_neuronets_number:]
             # Get children number for couples:
             couples_number = ceil(dead_neuronets_number / fertility)
             last_couple_children_number = dead_neuronets_number % fertility
@@ -51,7 +56,7 @@ class Population:
                 fertility for _n in range(couples_number)]
             if last_couple_children_number != 0:
                 couples_children_number[0] = last_couple_children_number
-            couples_members = list(reversed(winners_neuronets))[
+            couples_members = list(reversed(self.neuronets))[
                 :couples_number * 2]
             couples_and_child_numbers = list(
                 zip(
@@ -68,4 +73,4 @@ class Population:
             self.generations += 1
             print(self.generations)
             print(self.best_neuronet.error)
-            self.neuronets = winners_neuronets + children
+            self.neuronets += children
