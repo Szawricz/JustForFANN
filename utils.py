@@ -74,6 +74,5 @@ def cross_over(first_neuronet, second_neuronet, mutability) -> object:
             child_raw_weight = first_weight.value_generator()
         child_raw_weights.append(child_raw_weight)
     return first_neuronet.__class__.init_from_weights(
-        weights=child_raw_weights,
-        structure=first_neuronet.structure,
+        child_raw_weights, *first_neuronet.essential_attrs,
     )
