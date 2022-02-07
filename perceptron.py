@@ -1,5 +1,3 @@
-from sys import float_info
-
 from iteration_utilities import deepflatten
 
 from layer import InputLayer, InternalLayer, OutputLayer
@@ -10,6 +8,7 @@ class Perceptron:
     def __init__(self, structure: list):
         self.error = None
         self.structure = structure
+        self.essential_attrs = [self.structure]
         interstructure = [neurons_number + 1 for neurons_number in structure]
         interstructure[-1] -= 1
         self.layers = list()
@@ -32,12 +31,17 @@ class Perceptron:
     def __repr__(self):
         return f'< Perceptron: {self.structure}> '
 
-    def get_outputs(self, inputs_values):
+    def _get_prelast_outputs(self, inputs_values):
         inputs_values = list(inputs_values)
         inputs_values.insert(0, 1)
         resoults = inputs_values
-        for layer in self.layers:
+        for layer in self.layers[:-1]:
             resoults = layer.get_outputs(resoults)
+        return resoults
+
+    def get_outputs(self, inputs_values):
+        resoults = self._get_prelast_outputs(inputs_values)
+        resoults = self.layers[-1].get_outputs(resoults)
         return resoults
 
     def count_error(self, dataset):
