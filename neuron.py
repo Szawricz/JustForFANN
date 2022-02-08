@@ -43,7 +43,7 @@ class InputNeuron(AbstractNeuron):
             value_generator=generate_uniform,
         )
 
-class StopNeuuron(InputNeuron):
+class StopNeuron(InputNeuron):
     pass
 
 class InternalLayerNeuron(AbstractNeuron):
