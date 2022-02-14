@@ -46,6 +46,12 @@ class InputNeuron(AbstractNeuron):
 class StopNeuron(InputNeuron):
     pass
 
+class ContinueNeuron(InputNeuron):
+    pass
+
+class StayNeuron(InputNeuron):
+    pass
+
 class InternalLayerNeuron(AbstractNeuron):
     def __init__(self, inputs_number: int):
         super().__init__(
@@ -64,6 +70,14 @@ class OutputNeuron(AbstractNeuron):
         )
 
 
+class NumberNeuron(OutputNeuron):
+    pass
+
+
+class ValueNeuron(OutputNeuron):
+    pass
+
+
 class BiasNeuron(AbstractNeuron):
     def __init__(self):
         super().__init__(
@@ -78,11 +92,11 @@ class BiasNeuron(AbstractNeuron):
 
 class ControlCouple:
     def __init__(self, inputs_number):
-        self.number = OutputNeuron(inputs_number)
-        self.value = OutputNeuron(inputs_number)
+        self.number = NumberNeuron(inputs_number)
+        self.value = ValueNeuron(inputs_number)
 
     def get_outputs(self, inputs_values: list):
-        return [
+        return (
             self.number.get_output(inputs_values),
             self.value.get_output(inputs_values),
-        ]
+        )
