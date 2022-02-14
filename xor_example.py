@@ -21,7 +21,8 @@ dataset = (
     ),
 )
 
-net = Perceptron(make_simple_structure(2, 1, 3, 1))\
-    .tich_by_genetic(dataset, size=100)\
-        .all_weights
-print(f'>> {(net)}')
+if __name__ == '__main__':
+    net = Perceptron(make_simple_structure(2, 1, 3, 1))\
+        .tich_by_genetic(dataset, size=100)\
+            .weights_number
+    print(f'>> {(net)}')
