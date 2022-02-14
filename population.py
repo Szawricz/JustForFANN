@@ -36,13 +36,15 @@ class Population:
     def count_errors(self, dataset):
         for neuronet in self.neuronets:
             neuronet.count_error(dataset)
-    
+
 
     def tich(
         self, dataset: list, fertility: int, error: float, mutability: float,
     ) -> object:
         while True:
             self.count_errors(dataset)
+            print(f'generation: {self.generations}', end='    ')
+            print(f'error: {self.best_neuronet.error}')
             if self.best_neuronet.error < error:
                 return self.best_neuronet
             self.sort_by_errors()
@@ -71,6 +73,4 @@ class Population:
                 for _child_number in range(children_number):
                     children.append(cross_over(first, second, mutability))
             self.generations += 1
-            print(self.generations)
-            print(self.best_neuronet.error)
             self.neuronets += children
