@@ -35,12 +35,12 @@ class RecurentPerceptron(Perceptron):
                 is_stop = self.stop_neuron.get_output(prelast_outputs)
                 is_continue = self.continue_neuron.get_output(prelast_outputs)
                 is_stay = self.stay_neuron.get_output(prelast_outputs)
+                if is_stop or is_continue:
+                    break
                 if just_final:
                     resoults = resoult
                 else:
                     resoults.append(resoult)
-                if is_stop or is_continue:
-                    break
             if is_stop:
                 break
             if is_continue:
