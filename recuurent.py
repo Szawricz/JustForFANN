@@ -1,20 +1,18 @@
-from neuron import ControlCouple, StopNeuron
+from neuron import ContinueNeuron, ControlCouple, StayNeuron, StopNeuron
 from perceptron import Perceptron
 
 
 class RecurentPerceptron(Perceptron):
-    def __init__(
-        self, structure, control_couples_number=1, with_stop_neuron=False,
-    ):
+    def __init__(self, structure, control_couples_number=1):
         super().__init__(structure)
         inputs_number = len(self.layers[-2].neurons)
-        self.essential_attrs.extend([control_couples_number, with_stop_neuron])
+        self.essential_attrs.append(control_couples_number)
         self.control_couples = list()
         for _couple in range(control_couples_number):
             self.control_couples.append(ControlCouple(inputs_number))
-        self.stop_neuron = None
-        if with_stop_neuron:
-            self.stop_neuron = StopNeuron(inputs_number)
+        self.stop_neuron = StayNeuron(inputs_number)
+        self.continue_neuron = ContinueNeuron(inputs_number)
+        self.stay_neuron = StayNeuron(inputs_number)
 
 
     def __repr__(self):
@@ -28,26 +26,36 @@ class RecurentPerceptron(Perceptron):
 
     def get_outputs(self, inputs_values_list, just_final=False):
         resoults = list()
-        for iteration, inputs_values in enumerate(inputs_values_list, start=1):
-            resoult = super().get_outputs(inputs_values)
-            prelast_outputs = self._get_prelast_outputs(inputs_values)
-            self._change_weights(inputs_values)
-            if not just_final:
-                resoults.append(resoult)
-            elif iteration == len(inputs_values_list):
-                resoults = resoult
-            if self.stop_neuron.get_output(prelast_outputs):
+        for inputs_values in inputs_values_list:
+            is_stay = True
+            while is_stay:
+                resoult = super().get_outputs(inputs_values)
+                prelast_outputs = self._get_prelast_outputs(inputs_values)
+                self._change_weights(prelast_outputs)
+                is_stop = self.stop_neuron.get_output(prelast_outputs)
+                is_continue = self.continue_neuron.get_output(prelast_outputs)
+                is_stay = self.stay_neuron.get_output(prelast_outputs)
+                if just_final:
+                    resoults = resoult
+                else:
+                    resoults.append(resoult)
+                if is_stop or is_continue:
+                    break
+            if is_stop:
                 break
+            if is_continue:
+                continue
         return resoults
+
+
+    def count_error(self, dataset):
+        pass
 
     @classmethod
     def init_from_weights(
-        cls, weights: list, structure: list,
-        control_couples_number: int, with_stop_neuron: bool,
+        cls, weights: list, structure: list, control_couples_number: int,
     ):
-        new_perceptron = cls(
-            structure, control_couples_number, with_stop_neuron,
-        )
+        new_perceptron = cls(structure, control_couples_number)
         for position, weight in enumerate(new_perceptron.all_weights):
             weight.value = weights[position]
         return new_perceptron
@@ -61,4 +69,6 @@ class RecurentPerceptron(Perceptron):
 
     @property
     def all_neurons(self) -> list:
-        return super().all_neurons + self.control_neurons + self.stop_neuron
+        return super().all_neurons + self.control_neurons + [
+            self.stop_neuron, self.continue_neuron, self.stay_neuron,
+        ]
