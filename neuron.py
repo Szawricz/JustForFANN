@@ -49,9 +49,6 @@ class StopNeuron(InputNeuron):
 class ContinueNeuron(InputNeuron):
     pass
 
-class StayNeuron(InputNeuron):
-    pass
-
 class InternalLayerNeuron(AbstractNeuron):
     def __init__(self, inputs_number: int):
         super().__init__(
