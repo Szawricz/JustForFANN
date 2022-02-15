@@ -1,8 +1,9 @@
+from functools import lru_cache
 from random import choice, uniform
 
 from numpy import exp
 
-
+@lru_cache()
 def sig(neuro_sum: float) -> float:
     """Return the sigmoid function result.
     Args:
@@ -12,27 +13,15 @@ def sig(neuro_sum: float) -> float:
     """
     return 2 / (1 + exp(-neuro_sum)) - 1
 
-
+@lru_cache()
 def softsign(neuro_sum: float) -> float:
     return neuro_sum / (1 + abs(neuro_sum))
 
-
+@lru_cache()
 def heaviside(neuro_sum: float) -> int:
     if neuro_sum >= 0:
         return 1
     return 0
-
-
-def string_to_numbers_list(string: str) -> list:
-    return [ord(character) for character in string]
-
-
-def numbers_list_to_string(numbers_list: list) -> str:
-    unicode_max = 1114111
-    chars_list = list()
-    for number in numbers_list:
-        chars_list.append(chr(round((number + 1) / 2 * unicode_max)))
-    return str().join(chars_list)
 
 
 def linear(neuro_sum: float) -> float:
