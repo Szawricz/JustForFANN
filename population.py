@@ -1,3 +1,4 @@
+from functools import lru_cache
 from math import ceil
 
 from more_itertools import sort_together
@@ -24,7 +25,7 @@ class Population:
     def best_neuronet(self) -> object:
         return self.neuronets[self.errors.index(min(self.errors))]
 
-
+    @lru_cache()
     def get_dead_neuronets_number(self, fertility: int) -> int:
         return ceil(self.size * fertility / (2 + fertility))
 
