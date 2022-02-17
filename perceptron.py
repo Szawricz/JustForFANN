@@ -57,7 +57,7 @@ class Perceptron:
             resoult_outputs = self.get_outputs(dataset_inputs)
             unit_error = self.max_unit_error(dataset_outputs, resoult_outputs)
             resoults.append(unit_error)
-        return max(resoults)
+        self.error = max(resoults)
 
     def tich_by_genetic(
         self, dataset: list, size=100, fertility=2, error=0.25,
