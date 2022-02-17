@@ -44,15 +44,20 @@ class Perceptron:
         resoults = self.layers[-1].get_outputs(resoults)
         return resoults
 
+    @staticmethod
+    def max_unit_error(case_output, real_output):
+        unit_errors = list()
+        for waited, real in list(zip(case_output, real_output)):
+            unit_errors.append(abs((waited - real) / 2))
+        return max(unit_errors)
+
     def count_error(self, dataset):
         resoults = list()
         for dataset_inputs, dataset_outputs in dataset:
             resoult_outputs = self.get_outputs(dataset_inputs)
-            output_errors = list()
-            for waited, real in list(zip(dataset_outputs, resoult_outputs)):
-                output_errors.append(abs((waited - real) / 2))
-            resoults.append(max(output_errors))
-        self.error = max(resoults)
+            unit_error = self.max_unit_error(dataset_outputs, resoult_outputs)
+            resoults.append(unit_error)
+        return max(resoults)
 
     def tich_by_genetic(
         self, dataset: list, size=100, fertility=2, error=0.25,
