@@ -1,7 +1,19 @@
 from functools import lru_cache
+from pickle import dump, load
 from random import choice, uniform
 
 from numpy import exp
+
+
+class PickleMixin:
+    def save_to_file(self, file_path: str):
+        with open(file_path, 'wb') as fle:
+            dump(self, fle)
+
+    @classmethod
+    def load_from_file(cls, file_path: str) -> object:
+        with open(file_path, 'rb') as fle:
+            return load(fle)
 
 @lru_cache()
 def sig(neuro_sum: float) -> float:
@@ -17,7 +29,7 @@ def sig(neuro_sum: float) -> float:
 def softsign(neuro_sum: float) -> float:
     return neuro_sum / (1 + abs(neuro_sum))
 
-@lru_cache()
+
 def heaviside(neuro_sum: float) -> int:
     if neuro_sum >= 0:
         return 1
@@ -54,21 +66,3 @@ def make_simple_structure(
         resoult_structure.append(interm_layers_neurons_number)
     resoult_structure.append(outputs_number)
     return resoult_structure
-
-
-def cross_over(first_neuronet, second_neuronet, mutability) -> object:
-    compliment_weights_couples = list(
-        zip(first_neuronet.all_weights, second_neuronet.all_weights)
-    )
-    child_raw_weights = list()
-    for first_weight, second_weight in compliment_weights_couples:
-        if choice([True, False]):
-            child_raw_weight = first_weight.value
-        else:
-            child_raw_weight = second_weight.value
-        if uniform(0, 1) < mutability:
-            child_raw_weight = first_weight.value_generator()
-        child_raw_weights.append(child_raw_weight)
-    return first_neuronet.__class__.init_from_weights(
-        child_raw_weights, *first_neuronet.essential_attrs,
-    )
