@@ -2,9 +2,10 @@ from iteration_utilities import deepflatten
 
 from layer import InputLayer, InternalLayer, OutputLayer
 from population import Population
+from utils import PickleMixin
 
 
-class Perceptron:
+class Perceptron(PickleMixin):
     def __init__(self, structure: list):
         self.error = None
         self.structure = structure
@@ -37,21 +38,22 @@ class Perceptron:
         resoults = inputs_values
         for layer in self.layers[:-1]:
             resoults = layer.get_outputs(resoults)
+        self.prelast_outputs = resoults
         return resoults
 
     def get_outputs(self, inputs_values):
-        resoults = self._get_prelast_outputs(inputs_values)
-        resoults = self.layers[-1].get_outputs(resoults)
-        return resoults
+        return self.layers[-1].get_outputs(
+            self._get_prelast_outputs(inputs_values),
+        )
 
     @staticmethod
     def max_unit_error(case_output, real_output):
         unit_errors = list()
-        for waited, real in list(zip(case_output, real_output)):
+        for waited, real in zip(case_output, real_output):
             unit_errors.append(abs((waited - real) / 2))
         return max(unit_errors)
 
-    def count_error(self, dataset):
+    def count_error(self, dataset, *args):
         resoults = list()
         for dataset_inputs, dataset_outputs in dataset:
             resoult_outputs = self.get_outputs(dataset_inputs)
@@ -60,22 +62,27 @@ class Perceptron:
         self.error = max(resoults)
 
     def tich_by_genetic(
-        self, dataset: list, size=100, fertility=2, error=0.25,
-        mutability=0.25,
+        self, dataset: list, size=100, mortality=0.4, error=0.25,
+        similarity=0.9, mutability=0.1, time_limit=None, file_path=None,
     ) -> object:
         population = Population(size=size-1, neuronet=self)
         population.neuronets.append(self)
         return population.tich(
-            dataset=dataset, fertility=fertility,
-            error=error, mutability=mutability,
+            dataset=dataset, similarity=similarity, mortality=mortality,
+            error=error, mutability=mutability, time_limit=time_limit,
+            file_path=file_path,
         )
 
     @classmethod
-    def init_from_weights(cls, weights: list, structure: list):
-        new_perceptron = cls(structure)
+    def init_from_weights(cls, weights: list, essential_attrs: list):
+        new_perceptron = cls(*essential_attrs)
         for position, weight in enumerate(new_perceptron.all_weights):
             weight.value = weights[position]
         return new_perceptron
+
+    @property
+    def prelast_outputs_number(self) -> int:
+        return len(self.layers[-2].neurons)
 
     @property
     def weights_number(self) -> int:
@@ -83,12 +90,8 @@ class Perceptron:
 
     @property
     def all_weights(self) -> list:
-        neurons = self.all_neurons
-        weights = list(deepflatten([neuron.weights for neuron in neurons]))
-        return weights
+        return list(deepflatten([neuron.weights for neuron in self.all_neurons]))
 
     @property
     def all_neurons(self) -> list:
-        layers = self.layers
-        neurons = list(deepflatten([layer.neurons for layer in layers]))
-        return neurons
+        return list(deepflatten([layer.neurons for layer in self.layers]))
