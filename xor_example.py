@@ -24,5 +24,5 @@ dataset = (
 if __name__ == '__main__':
     net = Perceptron.load_from_file('/home/user/Desktop/My_folder/xor0.15.ann')
     # net = Perceptron([2, 3, 1])
-    net = net.tich_by_genetic(dataset, size=100, error=0.19)
+    net = net.tich_by_genetic(dataset, size=10, error=0.19)
     net.save_to_file('/home/user/Desktop/My_folder/xor0.15.ann')

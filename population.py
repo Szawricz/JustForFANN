@@ -1,5 +1,4 @@
 from random import choice, uniform
-from multiprocessing import Process, cpu_count, Pool
 from time import gmtime, strftime, time
 
 from more_itertools import sort_together
@@ -63,28 +62,11 @@ class Population(PickleMixin):
             sort_together([self.errors, self.neuronets])[1],
         )
 
-    @staticmethod
-    def count_partial_errors(neuronets, dataset, time_limit=None):
-        for neuronet in neuronets:
-            neuronet.count_error(dataset, time_limit)
 
     def count_errors(self, dataset, time_limit=None):
-        part_lenght = round(self.size / cpu_count())
-        processes = list()
-        for number in range(cpu_count()):
-            start = number * part_lenght
-            if number + 1 == cpu_count():
-                stop = None
-            else:
-                stop = (number + 1) * part_lenght
-            part = self.neuronets[start: stop]
-            process = Process(
-                target=self.count_partial_errors,
-                args=(part, dataset),
-                kwargs=dict(time_limit=time_limit),
-            )
-            process.start()
-            process.join()
+        for number, neuronet in enumerate(self.neuronets):
+            print(f'\rprogress: {round(number * 100 / self.size)}')
+            neuuronet.count_error(dataset, time_limit)
 
 
     def tich(
