@@ -66,7 +66,7 @@ class Population(PickleMixin):
     def count_errors(self, dataset, time_limit=None):
         for number, neuronet in enumerate(self.neuronets):
             print(f'\rprogress: {round(number * 100 / self.size)}')
-            neuuronet.count_error(dataset, time_limit)
+            neuronet.count_error(dataset, time_limit)
 
 
     def tich(
