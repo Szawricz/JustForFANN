@@ -4,7 +4,7 @@ from time import time
 from numpy import mean
 from textdistance import jaro_winkler
 
-from neuron import ContinueNeuron, ControlCouple, StopNeuron
+from neuron import ContinueNeuron, ControlCouple, StopNeuron, BiasNeuron
 from perceptron import Perceptron
 
 
@@ -68,7 +68,13 @@ class NonComplimentalRecurent(RecurentPerceptron):
         self.stop_neuron = StopNeuron(inputs_number)
         self.continue_neuron = ContinueNeuron(inputs_number)
 
+    def inverse_biases(self, value: bool):
+        for neuron in self.all_neurons:
+            if isinstance(neuron, BiasNeuron):
+                neuron.inversed = value
+
     def get_outputs(self, inputs_values_list, time_limit=None):
+        self.inverse_biases(False)
         start_time = time()
         is_stop = False
         while not is_stop:
@@ -90,8 +96,10 @@ class NonComplimentalRecurent(RecurentPerceptron):
                     break
             if resoults:
                 inputs_values_list = resoults
+                self.inverse_biases(True)
             else:
                 is_stop = True
+        self.inverse_biases(False)
         return resoults
 
     @property
