@@ -1,10 +1,10 @@
 from random import choice, uniform
-from time import gmtime, strftime, time
+from time import time
 
 from more_itertools import sort_together
 from numpy import mean
 
-from utils import PickleMixin
+from utils import PickleMixin, time_lenght_str
 
 
 class Population(PickleMixin):
@@ -25,19 +25,6 @@ class Population(PickleMixin):
     @property
     def best_neuronet(self) -> object:
         return self.neuronets[self.errors.index(min(self.errors))]
-
-    @staticmethod
-    def is_too_similar(first_neuronet, second_neuronet, similarity) -> bool:
-        weights_similarity = list()
-        first_weights = first_neuronet.all_weights
-        second_weights = second_neuronet.all_weights
-        for first, second in zip(first_weights, second_weights):
-            if first.value == second.value:
-                resoult = 1
-            else:
-                resoult = 0
-            weights_similarity.append(resoult)
-        return mean(weights_similarity) >= similarity
 
     @staticmethod
     def cross_over(first_neuronet, second_neuronet, mutability) -> object:
@@ -62,50 +49,57 @@ class Population(PickleMixin):
             sort_together([self.errors, self.neuronets])[1],
         )
 
-
     def count_errors(self, dataset, time_limit=None):
-        for number, neuronet in enumerate(self.neuronets):
-            print(f'\rprogress: {round(number * 100 / self.size)}')
+        neuronets = list()
+        for neuronet in self.neuronets:
+            if not neuronet.error:
+                neuronets.append(neuronet)
+        for number, neuronet in enumerate(neuronets, start=1):
+            percent = round(number * 100 / len(neuronets))
+            print(f'\rprogress: {percent}%', end='    ')
             neuronet.count_error(dataset, time_limit)
 
+    def form_couples(self, couples_number) -> list:
+        first_part = self.neuronets[::2]
+        second_part = self.neuronets[1::2]
+        half_lenght = int(self.size // 2)
+        fuull_passes_number = int(couples_number // half_lenght)
+        last_couples_number = int(couples_number % half_lenght)
+        couples = list()
+        number = 1
+        for first_neuronet, second_neuronet in zip(first_part, second_part):
+            if (not fuull_passes_number) and (number > last_couples_number):
+                break
+            for _number in range(fuull_passes_number):
+                couples.append((first_neuronet, second_neuronet))
+            if number <= last_couples_number:
+                couples.append((first_neuronet, second_neuronet))
+            number += 1
+        return couples
 
     def tich(
-        self, dataset: list, mortality=0.4, error=0.25,
-        similarity=0.9, mutability=0.1, time_limit=None, file_path=None,
+        self, dataset: list, mortality=0.4, error=0.25, 
+        mutability=0.1, time_limit=None, ann_path=None, ppl_path=None,
     ) -> object:
         while True:
             start_time = time()
             self.count_errors(dataset, time_limit)
             finish_time = time()
-            if file_path:
-                self.save_to_file(file_path)
             print(f'generation: {self.generations}', end='    ')
-            print(f'error: {self.best_neuronet.error}', end='    ')
-            time_lenght = strftime('%X', gmtime(finish_time - start_time))
-            print(f'timelenght: {time_lenght}')
+            print(f'mean error: {mean(self.errors)}', end='    ')
+            print(f'best error: {self.best_neuronet.error}', end='    ')
+            time_lenght = time_lenght_str(start_time, finish_time)
+            print(f'counting time: {time_lenght}')
+            if ann_path:
+                self.best_neuronet.save_to_file(ann_path)
+            if ppl_path:
+                self.save_to_file(ppl_path)
             if self.best_neuronet.error < error:
                 return self.best_neuronet
             self.sort_by_errors()
             dead_neuronets_number = round(mortality * self.size)
-            full_population_size = self.size
             self.neuronets = self.neuronets[:self.size - dead_neuronets_number]
-            children = list()
-            generating = True
-            while generating:
-                for position, first_neuronet in enumerate(self.neuronets):
-                    for second_neuronet in self.neuronets[position + 1:]:
-                        if similarity != 1 and self.is_too_similar(
-                            first_neuronet, second_neuronet, similarity,
-                        ):
-                            continue
-                        else:
-                            child = self.cross_over(
-                                first_neuronet, second_neuronet, mutability,
-                            )
-                            children.append(child)
-                            break
-                    if len(children) + self.size == full_population_size:
-                        generating = False
-                        break
+            couples = self.form_couples(dead_neuronets_number)
+            children = [self.cross_over(*cple, mutability) for cple in couples]
             self.generations += 1
             self.neuronets += children
