@@ -84,8 +84,11 @@ class BiasNeuron(AbstractNeuron):
             transmition_function=None,
             value_generator=None,
         )
+        self.inversed = False
 
     def get_output(self, *args) -> int:
+        if self.inversed:
+            return -1
         return 1
 
 
