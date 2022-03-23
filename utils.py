@@ -1,6 +1,7 @@
 from functools import lru_cache
 from pickle import dump, load
 from random import choice, uniform
+from time import gmtime, strftime
 
 from numpy import exp
 
@@ -66,3 +67,7 @@ def make_simple_structure(
         resoult_structure.append(interm_layers_neurons_number)
     resoult_structure.append(outputs_number)
     return resoult_structure
+
+
+def time_lenght_str(start_time: float, finish_time: float) -> str:
+    return strftime('%X', gmtime(finish_time - start_time))
