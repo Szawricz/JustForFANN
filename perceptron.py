@@ -63,14 +63,15 @@ class Perceptron(PickleMixin):
 
     def tich_by_genetic(
         self, dataset: list, size=100, mortality=0.4, error=0.25,
-        similarity=0.9, mutability=0.1, time_limit=None, file_path=None,
+        mutability=0.2, time_limit=None, ann_path=None, ppl_path=None
     ) -> object:
         population = Population(size=size-1, neuronet=self)
+        self.error = None
         population.neuronets.append(self)
         return population.tich(
-            dataset=dataset, similarity=similarity, mortality=mortality,
-            error=error, mutability=mutability, time_limit=time_limit,
-            file_path=file_path,
+            dataset=dataset, mortality=mortality, error=error,
+            ppl_path=ppl_path, mutability=mutability,
+            time_limit=time_limit, ann_path=file_path,
         )
 
     @classmethod
