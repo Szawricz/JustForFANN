@@ -63,16 +63,23 @@ class Perceptron(PickleMixin):
 
     def tich_by_genetic(
         self, dataset: list, size=100, mortality=0.4, error=0.25,
-        mutability=0.2, time_limit=None, ann_path=None, ppl_path=None
+        mutability=0.2, time_limit=None, ann_path=None, save_population=False,
     ) -> object:
-        population = Population(size=size-1, neuronet=self)
+        if hasattr(self, 'population'):
+            self.population.change_size_to(size)
+        else:
+            self.population = Population(size=size-1, neuronet=self)
+            self.population.neuronets.append(self)
         self.error = None
-        population.neuronets.append(self)
-        return population.tich(
-            dataset=dataset, mortality=mortality, error=error,
-            ppl_path=ppl_path, mutability=mutability,
-            time_limit=time_limit, ann_path=file_path,
+
+        resoult = self.population.tich(
+            dataset=dataset, mortality=mortality, error=error, 
+            mutability=mutability, time_limit=time_limit, ann_path=ann_path,
+            save_population=save_population,
         )
+        if not save_population:
+            del self.population
+        return resoult
 
     @classmethod
     def init_from_weights(cls, weights: list, essential_attrs: list):
