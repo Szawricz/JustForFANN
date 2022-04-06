@@ -73,10 +73,13 @@ class NonComplimentalRecurent(RecurentPerceptron):
             if isinstance(neuron, BiasNeuron):
                 neuron.inversed = value
 
-    def get_outputs(self, inputs_values_list, time_limit=None):
+    def get_outputs(
+        self, inputs_values_list, just_final=False, time_limit=None,
+    ):
         self.inverse_biases(False)
         start_time = time()
         is_stop = False
+
         while not is_stop:
             resoults = list()
             for inputs_values in inputs_values_list:
@@ -91,7 +94,10 @@ class NonComplimentalRecurent(RecurentPerceptron):
                         is_stop = True
                     if is_stop or is_continue:
                         break
-                    resoults.append(resoult)
+                    if just_final:
+                        resoults = list().append(resoult)
+                    else:
+                        resoults.append(resoult)
                 if is_stop:
                     break
             if resoults:
@@ -99,7 +105,10 @@ class NonComplimentalRecurent(RecurentPerceptron):
                 self.inverse_biases(True)
             else:
                 is_stop = True
+
         self.inverse_biases(False)
+        if just_final:
+            return resoult
         return resoults
 
     @property
@@ -109,7 +118,9 @@ class NonComplimentalRecurent(RecurentPerceptron):
 
 class JustFinalRecurent(NonComplimentalRecurent):
     def get_outputs(self, inputs_values_list, time_limit=None):
-        return super().get_outputs(inputs_values_list, time_limit).pop()
+        return super().get_outputs(
+            inputs_values_list, time_limit, just_final=True,
+        )
 
     def count_error(self, dataset) -> float:
         cases_errors = list()
