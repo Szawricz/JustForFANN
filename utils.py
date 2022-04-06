@@ -1,7 +1,7 @@
-from functools import lru_cache
+from functools import lru_cache, wraps
 from pickle import dump, load
 from random import choice, uniform
-from time import gmtime, strftime
+from time import gmtime, strftime, time
 
 from numpy import exp
 
@@ -16,6 +16,7 @@ class PickleMixin:
         with open(file_path, 'rb') as fle:
             return load(fle)
 
+
 @lru_cache()
 def sig(neuro_sum: float) -> float:
     """Return the sigmoid function result.
@@ -25,6 +26,7 @@ def sig(neuro_sum: float) -> float:
         The return value in float type
     """
     return 2 / (1 + exp(-neuro_sum)) - 1
+
 
 @lru_cache()
 def softsign(neuro_sum: float) -> float:
@@ -69,5 +71,16 @@ def make_simple_structure(
     return resoult_structure
 
 
-def time_lenght_str(start_time: float, finish_time: float) -> str:
-    return strftime('%X', gmtime(finish_time - start_time))
+@lru_cache()
+def time_lenght_str(time: float) -> str:
+    return strftime('%X', gmtime(time))
+
+
+def measure_execution_time(procedure):
+    @wraps(procedure)
+    def _wrapper(*args, **kwargs) -> float:
+        start = time()
+        procedure(*args, **kwargs)
+        finish = time()
+        return finish - start
+    return _wrapper
