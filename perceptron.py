@@ -73,7 +73,7 @@ class Perceptron(PickleMixin):
         self.error = None
 
         resoult = self.population.tich(
-            dataset=dataset, mortality=mortality, error=error, 
+            dataset=dataset, mortality=mortality, error=error,
             mutability=mutability, time_limit=time_limit, ann_path=ann_path,
             save_population=save_population,
         )
@@ -98,7 +98,9 @@ class Perceptron(PickleMixin):
 
     @property
     def all_weights(self) -> list:
-        return list(deepflatten([neuron.weights for neuron in self.all_neurons]))
+        return list(
+            deepflatten([neuron.weights for neuron in self.all_neurons]),
+        )
 
     @property
     def all_neurons(self) -> list:
