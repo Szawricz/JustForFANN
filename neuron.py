@@ -30,7 +30,7 @@ class AbstractNeuron:
         for weight_number, weight in enumerate(self.weights):
             weighted_values.append(inputs_values[weight_number] * weight.value)
         return sum(weighted_values)
-    
+
     def get_output(self, inputs_values: list):
         return self.transmition_function(self._get_weighted_sum(inputs_values))
 
@@ -42,6 +42,7 @@ class InputNeuron(AbstractNeuron):
             transmition_function=heaviside,
             value_generator=generate_uniform,
         )
+
 
 class StopNeuron(InputNeuron):
     pass
