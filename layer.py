@@ -36,6 +36,6 @@ class InternalLayer(AbstractLayer):
 class OutputLayer(AbstractLayer):
     def __init__(self, last_layer_neurons_number: int, neurons_number: int):
         super().__init__(
-            last_layer_neurons_number, neurons_number,
-            OutputNeuron, with_bias=False,
+            last_layer_neurons_number, neurons_number, OutputNeuron,
+            with_bias=False,
         )
