@@ -7,24 +7,29 @@ from numpy import exp
 
 
 class PickleMixin:
-    def save_to_file(self, file_path: str):
+    def save_to_pickle(self, file_path: str):
         with open(file_path, 'wb') as fle:
             dump(self, fle)
 
     @classmethod
-    def load_from_file(cls, file_path: str) -> object:
+    def load_from_pickle(cls, file_path: str) -> object:
+        with open(file_path, 'rb') as fle:
+            return load(fle)
+
+
+class JsonMixin:
+    def save_to_json(self, file_path: str):
+        with open(file_path, 'wb') as fle:
+            dump(self, fle)
+
+    @classmethod
+    def load_from_json(cls, file_path: str) -> object:
         with open(file_path, 'rb') as fle:
             return load(fle)
 
 
 @lru_cache()
 def sig(neuro_sum: float) -> float:
-    """Return the sigmoid function result.
-    Args:
-        neuro_sum: a weighted sum of neurons
-    Returns:
-        The return value in float type
-    """
     return 2 / (1 + exp(-neuro_sum)) - 1
 
 
@@ -84,3 +89,26 @@ def measure_execution_time(procedure):
         finish = time()
         return finish - start
     return _wrapper
+
+
+def mix_in(*mixins):
+    def decorator(class_be_decorated):
+        for mixin in mixins:
+            callable_attributes = dict()
+            for key, value in mixin.__dict__.items():
+                if callable(value):
+                    callable_attributes[key] = value
+                elif isinstance(value, classmethod):
+                    callable_attributes[key] = value
+            for key, value in callable_attributes.items():
+                setattr(class_be_decorated, key, value)
+        return class_be_decorated
+    return decorator
+
+
+def pickling(class_be_decorated):
+    return mix_in(PickleMixin)(class_be_decorated)
+
+
+def jsoning(class_be_decorated):
+    return mix_in(JsonMixin)(class_be_decorated)
