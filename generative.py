@@ -25,7 +25,7 @@ class NonComplimentalRecurent(RecurentPerceptron):
                 neuron.inversed = value
 
     def get_outputs(
-        self, inputs_values_list, just_final=False, time_limit=None,
+        self, inputs_values_list, time_limit=None, just_final=False,
     ):
         self.inverse_biases(False)
         start_time = time()
@@ -41,10 +41,13 @@ class NonComplimentalRecurent(RecurentPerceptron):
                     is_continue = self.continue_neuron\
                         .get_output(self.prelast_outputs)
                     self._change_weights()
+
                     if time_limit and ((time() - start_time) > time_limit):
                         is_stop = True
+
                     if is_stop or is_continue:
                         break
+
                     if just_final:
                         resoults = list().append(resoult)
                     else:
