@@ -1,13 +1,13 @@
 from utils import generate_sign, generate_uniform, heaviside, softsign
 
 
-class Weight():
+class Weight:
     def __init__(self, value_generator=generate_sign):
         self.value = value_generator()
         self.value_generator = value_generator
 
     @classmethod
-    def init_with_value(cls, value):
+    def init_with_value(cls, value: float):
         new_weight = cls()
         new_weight.value = value
         return new_weight
@@ -44,12 +44,8 @@ class InputNeuron(AbstractNeuron):
         )
 
 
-class StopNeuron(InputNeuron):
-    pass
-
-
-class ContinueNeuron(InputNeuron):
-    pass
+StopNeuron = type('StopNeuron', (InputNeuron,), dict())
+ContinueNeuron = type('ContinueNeuron', (InputNeuron,), dict())
 
 
 class InternalLayerNeuron(AbstractNeuron):
@@ -70,12 +66,8 @@ class OutputNeuron(AbstractNeuron):
         )
 
 
-class NumberNeuron(OutputNeuron):
-    pass
-
-
-class ValueNeuron(OutputNeuron):
-    pass
+NumberNeuron = type('NumberNeuron', (OutputNeuron,), dict())
+ValueNeuron = type('ValueNeuron', (OutputNeuron,), dict())
 
 
 class BiasNeuron(AbstractNeuron):
@@ -94,7 +86,7 @@ class BiasNeuron(AbstractNeuron):
 
 
 class ControlCouple:
-    def __init__(self, inputs_number):
+    def __init__(self, inputs_number: int):
         self.number = NumberNeuron(inputs_number)
         self.value = ValueNeuron(inputs_number)
 
