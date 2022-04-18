@@ -1,8 +1,10 @@
+from string import ascii_uppercase
+
 from generative import ChatBot
 from utils import make_simple_structure
 
 
-# chat_bot = ChatBot.load_from_file(
+# chat_bot = ChatBot.load_from_pickle(
 #     '/home/user/Desktop/My_folder/brain.ann',
 # )
 
@@ -19,7 +21,7 @@ dataset = [
     ['0 + 1 = ?', '1'],
     [
         'Say the letters of English alphabet, please.',
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        ascii_uppercase,
     ],
     ['Could you answer nothing?', ''],
     ['Repeat please word "cat"', 'cat. What is cat?'],
@@ -30,7 +32,13 @@ dataset = [
 
 
 if __name__ == '__main__':
-    chat_bot = chat_bot.tich_by_genetic(dataset, size=10, time_limit=60)
+    chat_bot = chat_bot.tich_by_genetic(
+        dataset,
+        size=1000,
+        time_limit=60,
+        ann_path='/home/user/Desktop/My_folder/brain.ann',
+        save_population=True,
+    )
 
     while True:
         answer = chat_bot.get_outputs(input('You: '), time_limit=10)
