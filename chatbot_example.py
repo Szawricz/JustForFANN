@@ -34,7 +34,7 @@ dataset = [
 if __name__ == '__main__':
     chat_bot = chat_bot.tich_by_genetic(
         dataset,
-        size=1000,
+        size=100,
         time_limit=60,
         ann_path='/home/user/Desktop/My_folder/brain.ann',
         save_population=True,
