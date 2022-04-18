@@ -1,47 +1,96 @@
+from functools import wraps
 from random import choice, uniform
+from time import time
 
 from more_itertools import sort_together
 from numpy import mean
 
-from utils import PickleMixin, measure_execution_time, time_lenght_str
+from utils import measure_execution_time, pickling, time_lenght_str
 
 
-class Population(PickleMixin):
+def _print_spases_line():
+    print('\r', 78 * ' ', end='')
+
+
+def with_current_process_print(string_to_print: str):
+    def decorator(function):
+        @wraps(function)
+        def _wrapper(*args, **kwargs):
+            print(f'\r{string_to_print} ', end=' | ')
+            resoult = function(*args, **kwargs)
+            _print_spases_line()
+            return resoult
+        return _wrapper
+    return decorator
+
+
+@pickling
+class Population:
     def __init__(self, size: int, neuronet: object):
         neuronet_type = neuronet.__class__
         attrs = neuronet.essential_attrs
         self.neuronets = [neuronet_type(*attrs) for _item in range(size)]
         self.generations = int()
 
+    def tich(
+        self, dataset: list, mortality=0.4, error=0.25, mutability=0.2,
+        time_limit=None, ann_path=None, save_population=False,
+    ) -> object:
+
+        self._print_chart_top(dataset, error, time_limit)
+        start_time = time()
+
+        while True:
+            self._count_errors(dataset, time_limit)
+
+            if ann_path:
+                self._save_best_neuronet(ann_path, save_population)
+
+            finish_time = time()
+            resoult_time = finish_time - start_time
+            start_time = time()
+
+            self._print_chart_line(resoult_time, ann_path, save_population)
+
+            if self.best_neuronet.error < error:
+                return self.best_neuronet
+
+            self._sort_by_errors()
+
+            dead_nets_number = round(mortality * self.size)
+            survived_nets_number = self.size - dead_nets_number
+
+            self.change_size_to(survived_nets_number)
+            couples = self._form_couples(dead_nets_number)
+            children = [self._cross_over(*cple, mutability) for cple in couples]
+            self.generations += 1
+            self.neuronets += children
 
     def change_size_to(self, neuronets_number):
         if self.size > neuronets_number:
             self.neuronets = self.neuronets[:neuronets_number]
         elif self.size < neuronets_number:
-            additional_neuronets = self.__class__(
-                size = self.size - neuronets_number,
-                neuronet = self.neuronets[0],
-            ).neuronets
+            size = self.size - neuronets_number
+            neuronet = self.neuronets[0]
+            additional_neuronets = self.__class__(size, neuronet).neuronets
             self.neuronets += additional_neuronets
-
 
     @property
     def size(self) -> int:
         return len(self.neuronets)
 
-
-    @property
-    def errors(self) -> list:
-        return [neuronet.error for neuronet in self.neuronets]
-
-
     @property
     def best_neuronet(self) -> object:
-        return self.neuronets[self.errors.index(min(self.errors))]
+        return self.neuronets[self._errors.index(min(self._errors))]
 
+    @property
+    def _errors(self) -> list:
+        return [neuronet.error for neuronet in self.neuronets]
 
-    @staticmethod
-    def cross_over(first_neuronet, second_neuronet, mutability) -> object:
+    @with_current_process_print('breeding:')
+    def _cross_over(
+        self, first_neuronet, second_neuronet, mutability: float,
+    ) -> object:
         compliment_weights_couples = zip(
             first_neuronet.all_weights, second_neuronet.all_weights,
         )
@@ -58,26 +107,29 @@ class Population(PickleMixin):
             child_raw_weights, first_neuronet.essential_attrs,
         )
 
-
-    def sort_by_errors(self):
+    def _sort_by_errors(self):
         self.neuronets = list(
-            sort_together([self.errors, self.neuronets])[1],
+            sort_together([self._errors, self.neuronets])[1],
         )
 
+    def _print_percent(self, name, number, sequence):
+        percent = round(number * 100 / len(sequence))
+        print(f'\r{name} {percent}%', end=' | ')
 
     @measure_execution_time
-    def count_errors(self, dataset, time_limit=None):
+    def _count_errors(self, dataset, time_limit=None):
         neuronets = list()
-        for neuronet in self.neuronets:
+        for number, neuronet in enumerate(self.neuronets):
+            self._print_percent('prepare:', number, self.neuronets)
             if not neuronet.error:
                 neuronets.append(neuronet)
         for number, neuronet in enumerate(neuronets, start=1):
-            percent = round(number * 100 / len(neuronets))
-            print(f'\rprogress: {percent}%', end=' | ')
+            self._print_percent('rprogress:', number, neuronets)
             neuronet.count_error(dataset, time_limit)
+        _print_spases_line()
 
-
-    def form_couples(self, couples_number) -> tuple:
+    @with_current_process_print('forming:')
+    def _form_couples(self, couples_number) -> tuple:
         first_part = self.neuronets[::2]
         second_part = self.neuronets[1::2]
         half_lenght = int(self.size // 2)
@@ -93,8 +145,7 @@ class Population(PickleMixin):
                 yield (first_neuronet, second_neuronet)
             number += 1
 
-
-    def print_chart_top(self, dataset, error, time_limit):
+    def _print_chart_top(self, dataset, error, time_limit):
         print(
             f'population size: {self.size}',
             f'dataset lenght: {len(dataset)}',
@@ -102,56 +153,25 @@ class Population(PickleMixin):
             f'time limit per case: {time_limit} sec',
             sep=' | ',
         )
-        print(74 * '=')
+        print(79 * '=')
 
-
-    def print_chart_line(self, time: float):
+    def _print_chart_line(
+        self, time: float, ann_path: str, save_population: bool,
+    ):
         print(f'\rgeneration: {self.generations} ', end=' | ')
-        print(f'mean error: {mean(self.errors)}', end=' | ')
+        print(f'mean error: {mean(self._errors)}', end=' | ')
         print(f'best error: {self.best_neuronet.error}', end=' | ')
         print(f'counting time: {time_lenght_str(time)}', end=' | ')
-
-
-    def save_with_population(self, ann_path, save_population: bool):
+        if ann_path:
+            print('saved', end=' ')
         if save_population:
-            self.best_neuronet.population = self
-        elif hasattr(self.best_neuronet, 'population'):
-            del self.best_neuronet.population
-        self.best_neuronet.save_to_file(ann_path)
-        print('saved', end='')
-
-
-    def enter_new_line(self):
+            print('with population', end=' ')
         print('')
 
-
-    def tich(
-        self, dataset: list, mortality=0.4, error=0.25, mutability=0.2,
-        time_limit=None, ann_path=None, save_population=False,
-    ) -> object:
-
-        self.print_chart_top(dataset, error, time_limit)
-
-        while True:
-            time = self.count_errors(dataset, time_limit)
-
-            self.print_chart_line(time)
-
-            if ann_path:
-                self.save_with_population(ann_path, save_population)
-            
-            self.enter_new_line()
-
-            if self.best_neuronet.error < error:
-                return self.best_neuronet
-
-            self.sort_by_errors()
-
-            dead_nets_number = round(mortality * self.size)
-            survived_nets_number = self.size - dead_nets_number
-
-            self.change_size_to(survived_nets_number)
-            couples = self.form_couples(dead_nets_number)
-            children = [self.cross_over(*cple, mutability) for cple in couples]
-            self.generations += 1
-            self.neuronets += children
+    @with_current_process_print('saving:')
+    def _save_best_neuronet(self, ann_path: str, with_population: bool):
+        if with_population:
+            self.best_neuronet.population = self
+        self.best_neuronet.save_to_pickle(ann_path)
+        if with_population:
+            del self.best_neuronet.population
