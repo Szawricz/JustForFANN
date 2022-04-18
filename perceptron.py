@@ -2,10 +2,11 @@ from iteration_utilities import deepflatten
 
 from layer import InputLayer, InternalLayer, OutputLayer
 from population import Population
-from utils import PickleMixin
+from utils import pickling
 
 
-class Perceptron(PickleMixin):
+@pickling
+class Perceptron:
     def __init__(self, structure: list):
         self.error = None
         self.structure = structure
@@ -66,20 +67,17 @@ class Perceptron(PickleMixin):
         mutability=0.2, time_limit=None, ann_path=None, save_population=False,
     ) -> object:
         if hasattr(self, 'population'):
-            self.population.change_size_to(size)
+            population = self.population
+            del self.population
+            population.change_size_to(size)
         else:
-            self.population = Population(size=size-1, neuronet=self)
-            self.population.neuronets.append(self)
-        self.error = None
-
-        resoult = self.population.tich(
+            population = Population(size=size-1, neuronet=self)
+            population.neuronets.append(self)
+        return population.tich(
             dataset=dataset, mortality=mortality, error=error,
             mutability=mutability, time_limit=time_limit, ann_path=ann_path,
             save_population=save_population,
         )
-        if not save_population:
-            del self.population
-        return resoult
 
     @classmethod
     def init_from_weights(cls, weights: list, essential_attrs: list):
