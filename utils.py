@@ -1,7 +1,7 @@
 from functools import lru_cache, wraps
 from pickle import dump, load
 from random import choice, uniform
-from time import gmtime, strftime, time
+from time import ctime, gmtime, strftime, time
 
 from numpy import exp
 
@@ -89,6 +89,42 @@ def measure_execution_time(procedure):
         finish = time()
         return finish - start
     return _wrapper
+
+
+def with_start_and_finish_time_print(function):
+    @wraps(function)
+    def _wrapper(*args, **kwargs) -> float:
+        start_time = time()
+        print(f'Started at: {ctime(start_time)}')
+        print(79 * '=')
+        resoult = function(*args, **kwargs)
+        finish_time = time()
+        print(79 * '=')
+        print(f'Finished at: {ctime(finish_time)}')
+        print(f'TOTAL TIME: {ctime(finish_time - start_time)}')
+        return resoult
+    return _wrapper
+
+
+def print_spases_line():
+    print('\r', 78 * ' ', end='')
+
+
+def print_percent(name, number, sequence):
+    percent = round(number * 100 / len(sequence))
+    print(f'\r{name} {percent}%', end=' | ')
+
+
+def with_current_process_print(string_to_print: str):
+    def decorator(function):
+        @wraps(function)
+        def _wrapper(*args, **kwargs):
+            print(f'\r{string_to_print} ', end=' | ')
+            resoult = function(*args, **kwargs)
+            print_spases_line()
+            return resoult
+        return _wrapper
+    return decorator
 
 
 def mix_in(*mixins):
