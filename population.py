@@ -1,27 +1,12 @@
-from functools import wraps
 from random import choice, uniform
 from time import time
 
 from more_itertools import sort_together
 from numpy import mean
 
-from utils import measure_execution_time, pickling, time_lenght_str
-
-
-def _print_spases_line():
-    print('\r', 78 * ' ', end='')
-
-
-def with_current_process_print(string_to_print: str):
-    def decorator(function):
-        @wraps(function)
-        def _wrapper(*args, **kwargs):
-            print(f'\r{string_to_print} ', end=' | ')
-            resoult = function(*args, **kwargs)
-            _print_spases_line()
-            return resoult
-        return _wrapper
-    return decorator
+from utils import (pickling, print_percent, print_spases_line, time_lenght_str,
+                   with_current_process_print,
+                   with_start_and_finish_time_print)
 
 
 @pickling
@@ -32,6 +17,7 @@ class Population:
         self.neuronets = [neuronet_type(*attrs) for _item in range(size)]
         self.generations = int()
 
+    @with_start_and_finish_time_print
     def tich(
         self, dataset: list, mortality=0.4, error=0.25, mutability=0.2,
         time_limit=None, ann_path=None, save_population=False,
@@ -62,7 +48,7 @@ class Population:
 
             self.change_size_to(survived_nets_number)
             couples = self._form_couples(dead_nets_number)
-            children = [self._cross_over(*cple, mutability) for cple in couples]
+            children = self._make_children(couples, mutability)
             self.generations += 1
             self.neuronets += children
 
@@ -70,10 +56,10 @@ class Population:
         if self.size > neuronets_number:
             self.neuronets = self.neuronets[:neuronets_number]
         elif self.size < neuronets_number:
-            size = self.size - neuronets_number
+            size = neuronets_number - self.size
             neuronet = self.neuronets[0]
             additional_neuronets = self.__class__(size, neuronet).neuronets
-            self.neuronets += additional_neuronets
+            self.neuronets.extend(additional_neuronets)
 
     @property
     def size(self) -> int:
@@ -87,7 +73,6 @@ class Population:
     def _errors(self) -> list:
         return [neuronet.error for neuronet in self.neuronets]
 
-    @with_current_process_print('breeding:')
     def _cross_over(
         self, first_neuronet, second_neuronet, mutability: float,
     ) -> object:
@@ -107,28 +92,46 @@ class Population:
             child_raw_weights, first_neuronet.essential_attrs,
         )
 
+    @with_current_process_print('saving...')
+    def _save_best_neuronet(self, ann_path: str, with_population: bool):
+        if with_population:
+            self.best_neuronet.population = self
+        self.best_neuronet.save_to_pickle(ann_path)
+        if with_population:
+            del self.best_neuronet.population
+
+    def _make_children(self, couples: list, mutability: float):
+        children = list()
+        couples = list(couples)
+        for number, couple in enumerate(couples, start=1):
+            print_percent('breeding:', number, couples)
+            children.append(self._cross_over(*couple, mutability))
+        print_spases_line()
+        return children
+
     def _sort_by_errors(self):
         self.neuronets = list(
             sort_together([self._errors, self.neuronets])[1],
         )
 
-    def _print_percent(self, name, number, sequence):
-        percent = round(number * 100 / len(sequence))
-        print(f'\r{name} {percent}%', end=' | ')
-
-    @measure_execution_time
-    def _count_errors(self, dataset, time_limit=None):
+    @property
+    def _neuronets_without_counted_error(self):
         neuronets = list()
-        for number, neuronet in enumerate(self.neuronets):
-            self._print_percent('prepare:', number, self.neuronets)
+        for number, neuronet in enumerate(self.neuronets, start=1):
+            print_percent('neuronets preparing:', number, self.neuronets)
             if not neuronet.error:
                 neuronets.append(neuronet)
-        for number, neuronet in enumerate(neuronets, start=1):
-            self._print_percent('rprogress:', number, neuronets)
-            neuronet.count_error(dataset, time_limit)
-        _print_spases_line()
+        print_spases_line()
+        return neuronets
 
-    @with_current_process_print('forming:')
+    def _count_errors(self, dataset, time_limit=None):
+        neuronets = self._neuronets_without_counted_error
+        for number, neuronet in enumerate(neuronets, start=1):
+            print_percent('errors counting:', number, neuronets)
+            neuronet.count_error(dataset, time_limit)
+        print_spases_line()
+
+    @with_current_process_print('forming...')
     def _form_couples(self, couples_number) -> tuple:
         first_part = self.neuronets[::2]
         second_part = self.neuronets[1::2]
@@ -158,7 +161,7 @@ class Population:
     def _print_chart_line(
         self, time: float, ann_path: str, save_population: bool,
     ):
-        print(f'\rgeneration: {self.generations} ', end=' | ')
+        print(f'\rgeneration: {self.generations}', end=' | ')
         print(f'mean error: {mean(self._errors)}', end=' | ')
         print(f'best error: {self.best_neuronet.error}', end=' | ')
         print(f'counting time: {time_lenght_str(time)}', end=' | ')
@@ -167,11 +170,3 @@ class Population:
         if save_population:
             print('with population', end=' ')
         print('')
-
-    @with_current_process_print('saving:')
-    def _save_best_neuronet(self, ann_path: str, with_population: bool):
-        if with_population:
-            self.best_neuronet.population = self
-        self.best_neuronet.save_to_pickle(ann_path)
-        if with_population:
-            del self.best_neuronet.population
