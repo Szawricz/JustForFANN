@@ -16,21 +16,27 @@ class NonComplimentalRecurent(RecurentPerceptron):
     def __init__(self, structure, control_couples_number=1):
         super().__init__(structure, control_couples_number)
         inputs_number = self.prelast_outputs_number
+
         self.stop_neuron = StopNeuron(inputs_number)
         self.continue_neuron = ContinueNeuron(inputs_number)
 
-    def inverse_biases(self, value: bool):
+    def _set_biases_inversed(self):
         for neuron in self.all_neurons:
             if isinstance(neuron, BiasNeuron):
-                neuron.inversed = value
+                neuron.inversed = True
+    
+    def _set_biases_default(self):
+        for neuron in self.all_neurons:
+            if isinstance(neuron, BiasNeuron):
+                neuron.inversed = False
 
     def get_outputs(
         self, inputs_values_list, time_limit=None, just_final=False,
     ):
-        self.inverse_biases(False)
+        self._set_biases_default()
         start_time = time()
-        is_stop = False
 
+        is_stop = False
         while not is_stop:
             resoults = list()
             for inputs_values in inputs_values_list:
@@ -56,11 +62,9 @@ class NonComplimentalRecurent(RecurentPerceptron):
                     break
             if resoults:
                 inputs_values_list = resoults
-                self.inverse_biases(True)
+                self._set_biases_inversed()
             else:
                 is_stop = True
-
-        self.inverse_biases(False)
         if just_final:
             return resoult
         return resoults
@@ -99,9 +103,8 @@ class LevelsRecurent(NonComplimentalRecurent):
     def _numbers_to_level_chars_string(self, numbers_list: list) -> str:
         chars_list = list()
         for number in numbers_list:
-            chars_list.append(
-                chr(round((number + 1) / 2 * self.levels_number)),
-            )
+            char =  chr(round((number + 1) / 2 * self.levels_number))
+            chars_list.append(char)
         return str().join(chars_list)
 
     def count_error(self, dataset, time_limit=None) -> float:
@@ -126,7 +129,7 @@ class ChatBot(LevelsRecurent):
     def _numbers_to_level_chars_string(self, numbers_list: list) -> str:
         chars_list = list()
         for number in numbers_list:
-            index = (round((number + 1) / 2) * (self.levels_number - 1))
+            index = round((number + 1) / 2 * (self.levels_number - 1))
             chars_list.append(self.charset[index])
         return str().join(chars_list)
 
