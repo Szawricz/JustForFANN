@@ -7,25 +7,14 @@ from numpy import exp
 
 
 class PickleMixin:
-    def save_to_pickle(self, file_path: str):
-        with open(file_path, 'wb') as fle:
-            dump(self, fle)
+    def save_to_file(self, file_path: str):
+        with open(file_path, 'wb') as file:
+            dump(self, file)
 
     @classmethod
-    def load_from_pickle(cls, file_path: str) -> object:
-        with open(file_path, 'rb') as fle:
-            return load(fle)
-
-
-class JsonMixin:
-    def save_to_json(self, file_path: str):
-        with open(file_path, 'wb') as fle:
-            dump(self, fle)
-
-    @classmethod
-    def load_from_json(cls, file_path: str) -> object:
-        with open(file_path, 'rb') as fle:
-            return load(fle)
+    def load_from_file(cls, file_path: str) -> object:
+        with open(file_path, 'rb') as file:
+            return load(file)
 
 
 @lru_cache()
@@ -57,23 +46,26 @@ def generate_reversed_uniform() -> float:
 
 
 def generate_sign() -> int:
-    return choice([-1, 0, 1])
+    return choice((-1, 0, 1))
 
 
 def generate_0_or_1() -> int:
-    return choice([0, 1])
+    return choice((0, 1))
 
 
 def make_simple_structure(
     inputs_number: int, intermediate_layers_number: int,
     intermediate_layers_neurons_number: int, outputs_number: int,
 ) -> list:
-    interm_layers_neurons_number = intermediate_layers_neurons_number
     resoult_structure = [inputs_number]
     for _item in range(intermediate_layers_number):
-        resoult_structure.append(interm_layers_neurons_number)
+        resoult_structure.append(intermediate_layers_neurons_number)
     resoult_structure.append(outputs_number)
     return resoult_structure
+
+
+def count_arrays_product(first_array: list, second_array: list) -> list:
+    return [first * second for first, second in zip(first_array, second_array)]
 
 
 @lru_cache()
@@ -91,15 +83,15 @@ def measure_execution_time(procedure):
     return _wrapper
 
 
-def with_start_and_finish_time_print(function):
+def with_start_and_finish_time_print(function, bar_lenght=79):
     @wraps(function)
     def _wrapper(*args, **kwargs) -> float:
         start_time = time()
-        print(f'Started at: {ctime(start_time)}')
-        print(79 * '=')
+        print(f'\nStarted at: {ctime(start_time)}')
+        print(bar_lenght * '=')
         resoult = function(*args, **kwargs)
         finish_time = time()
-        print(79 * '=')
+        print(bar_lenght * '=')
         print(f'Finished at: {ctime(finish_time)}')
         print(f'TOTAL TIME: {ctime(finish_time - start_time)}')
         return resoult
@@ -111,15 +103,14 @@ def print_spases_line():
 
 
 def print_percent(name, number, sequence):
-    percent = round(number * 100 / len(sequence))
-    print(f'\r{name} {percent}%', end=' | ')
+    print(f'\r{name} {round(number * 100 / len(sequence))}%', end='')
 
 
 def with_current_process_print(string_to_print: str):
     def decorator(function):
         @wraps(function)
         def _wrapper(*args, **kwargs):
-            print(f'\r{string_to_print} ', end=' | ')
+            print(f'\r{string_to_print}', end='')
             resoult = function(*args, **kwargs)
             print_spases_line()
             return resoult
@@ -130,21 +121,12 @@ def with_current_process_print(string_to_print: str):
 def mix_in(*mixins):
     def decorator(class_be_decorated):
         for mixin in mixins:
-            callable_attributes = dict()
             for key, value in mixin.__dict__.items():
-                if callable(value):
-                    callable_attributes[key] = value
-                elif isinstance(value, classmethod):
-                    callable_attributes[key] = value
-            for key, value in callable_attributes.items():
-                setattr(class_be_decorated, key, value)
+                if callable(value) or isinstance(value, classmethod):
+                    setattr(class_be_decorated, key, value)
         return class_be_decorated
     return decorator
 
 
 def pickling(class_be_decorated):
     return mix_in(PickleMixin)(class_be_decorated)
-
-
-def jsoning(class_be_decorated):
-    return mix_in(JsonMixin)(class_be_decorated)
