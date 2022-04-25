@@ -8,11 +8,12 @@ class RecurentPerceptron(Perceptron):
     def __init__(self, structure, control_couples_number=1):
         super().__init__(structure)
         self.essential_attrs.append(control_couples_number)
+        self.recurent = True
+
         self.control_couples = list()
         for _couple in range(control_couples_number):
-            self.control_couples.append(
-                ControlCouple(self.prelast_outputs_number),
-            )
+            couple = ControlCouple(self.prelast_outputs_number)
+            self.control_couples.append(couple)
 
     def _change_weights(self):
         for couple in self.control_couples:
