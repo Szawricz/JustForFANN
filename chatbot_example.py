@@ -9,7 +9,7 @@ chat_bot = ChatBot(
     control_couples_number=10,
 )
 
-chat_bot = ChatBot.load_from_pickle('/home/user/Desktop/My_folder/brain.ann')
+chat_bot = ChatBot.load_from_file('/home/user/Desktop/My_folder/brain.ann')
 
 dataset = [
     ['Hey!', 'Hallo!'],
@@ -27,7 +27,7 @@ dataset = [
 if __name__ == '__main__':
     chat_bot = chat_bot.tich_by_genetic(
         dataset,
-        size=100,
+        size=50,
         time_limit=60,
         ann_path='/home/user/Desktop/My_folder/brain.ann',
         save_population=True,
