@@ -1,5 +1,5 @@
-from utils import generate_sign, generate_uniform, heaviside, softsign
-from numpy import array
+from utils import (count_arrays_product, generate_sign, generate_uniform,
+                   heaviside, softsign)
 
 
 class Weight:
@@ -31,7 +31,7 @@ class AbstractNeuron:
         return [weight.value for weight in self.weights]
 
     def _get_weighted_sum(self, inputs_values: list):
-        return sum(array(self.weights_values) * array(inputs_values))
+        return sum(count_arrays_product(self.weights_values, inputs_values))
 
     def get_output(self, inputs_values: list):
         return self.transmition_function(self._get_weighted_sum(inputs_values))
