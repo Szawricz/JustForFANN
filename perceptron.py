@@ -8,44 +8,53 @@ from utils import pickling
 @pickling
 class Perceptron:
     def __init__(self, structure: list):
-        self.error = None
+        # self.recurent define parrents neuronets needs retiching
+        self.recurent = False
+
         self.structure = structure
+        # self.essential_attrs define neuronet structure...
+        # ...for a similar neuronet making
         self.essential_attrs = [self.structure]
-        interstructure = [neurons_number + 1 for neurons_number in structure]
-        interstructure[-1] -= 1
+
+        self.error = None
+
         self.layers = list()
-        for layer_number, neurons_number in enumerate(interstructure):
+        for layer_number, neurons_number in enumerate(self.structure):
+            # first layer (index=0) of the structure isn't a true layer,
+            # but  the next layer neuron's inputs number.
             if layer_number == 0:
                 continue
-            if layer_number == 1:
-                layer = InputLayer
-            elif layer_number == len(interstructure) - 1:
-                layer = OutputLayer
+            elif layer_number == 1:
+                layer_type = InputLayer
+            elif layer_number == len(self.structure) - 1:
+                layer_type = OutputLayer
             else:
-                layer = InternalLayer
-            self.layers.append(
-                layer(
-                    neurons_number=neurons_number,
-                    last_layer_neurons_number=interstructure[layer_number - 1],
-                ),
-            )
+                layer_type = InternalLayer
+
+            # a last layer neurons` number consider bias adding
+            last_layer_neurons_number = self.structure[layer_number - 1] + 1
+
+            layer = layer_type(last_layer_neurons_number, neurons_number)
+            self.layers.append(layer)
 
     def __repr__(self):
         return f'< Perceptron: {self.structure}> '
 
+    def get_outputs(self, inputs_values):
+        prelast_outputs = self._get_prelast_outputs(inputs_values)
+        return self.layers[-1].get_outputs(prelast_outputs)
+
     def _get_prelast_outputs(self, inputs_values):
         inputs_values = list(inputs_values)
-        inputs_values.insert(0, 1)
+        inputs_values.insert(0, 1)  # last layer bias output emitation
+
         resoults = inputs_values
         for layer in self.layers[:-1]:
             resoults = layer.get_outputs(resoults)
+
+        # save prelast outputs for the reccurent special nurons use them later
         self.prelast_outputs = resoults
         return resoults
-
-    def get_outputs(self, inputs_values):
-        return self.layers[-1].get_outputs(
-            self._get_prelast_outputs(inputs_values),
-        )
 
     @staticmethod
     def max_unit_error(case_output, real_output):
@@ -66,25 +75,36 @@ class Perceptron:
         self, dataset: list, size=100, mortality=0.4, error=0.25,
         mutability=0.2, time_limit=None, ann_path=None, save_population=False,
     ) -> object:
+        # If neuronet is downloaded from file and contents population...
+        # ...we'll use this population.
         if hasattr(self, 'population'):
             population = self.population
-            del self.population
+
+            # if population is bigger or less then given size 
             population.change_size_to(size)
+
+            # delete population from the neuronet for easify its learning
+            del self.population
         else:
+            # create population with empty place for neuronet itself
             population = Population(size=size-1, neuronet=self)
+
             population.neuronets.append(self)
+
         return population.tich(
             dataset=dataset, mortality=mortality, error=error,
             mutability=mutability, time_limit=time_limit, ann_path=ann_path,
             save_population=save_population,
         )
 
-    @classmethod
-    def init_from_weights(cls, weights: list, essential_attrs: list):
-        new_perceptron = cls(*essential_attrs)
+    def copy_with_new_weights(self, weights: list):
+        new_perceptron = self.__class__(*self.essential_attrs)
         for position, weight in enumerate(new_perceptron.all_weights):
             weight.value = weights[position]
         return new_perceptron
+
+    def copy_with_random_weights(self):
+        return self.__class__(*self.essential_attrs)
 
     @property
     def prelast_outputs_number(self) -> int:
