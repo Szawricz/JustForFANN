@@ -46,11 +46,11 @@ def generate_reversed_uniform() -> float:
 
 
 def generate_sign() -> int:
-    return choice((-1, 0, 1))
+    return choice((-1, 0, 1,))
 
 
 def generate_0_or_1() -> int:
-    return choice((0, 1))
+    return choice((0, 1,))
 
 
 def make_simple_structure(
@@ -69,7 +69,7 @@ def count_arrays_product(first_array: list, second_array: list) -> list:
 
 
 @lru_cache()
-def time_lenght_str(time: float) -> str:
+def time_lenght_str(time_lenght: float) -> str:
     return strftime('%X', gmtime(time))
 
 
@@ -83,19 +83,21 @@ def measure_execution_time(procedure):
     return _wrapper
 
 
-def with_start_and_finish_time_print(function, bar_lenght=79):
-    @wraps(function)
-    def _wrapper(*args, **kwargs) -> float:
-        start_time = time()
-        print(f'\nStarted at: {ctime(start_time)}')
-        print(bar_lenght * '=')
-        resoult = function(*args, **kwargs)
-        finish_time = time()
-        print(bar_lenght * '=')
-        print(f'Finished at: {ctime(finish_time)}')
-        print(f'TOTAL TIME: {ctime(finish_time - start_time)}')
-        return resoult
-    return _wrapper
+def with_start_and_finish_time_print(bar_lenght=79):
+    def decorator(function):
+        @wraps(function)
+        def _wrapper(*args, **kwargs) -> float:
+            start_time = time()
+            print(f'\nStarted at: {ctime(start_time)}')
+            print(bar_lenght * '=')
+            resoult = function(*args, **kwargs)
+            finish_time = time()
+            print(bar_lenght * '=')
+            print(f'Finished at: {ctime(finish_time)}')
+            print(f'TOTAL TIME: {ctime(finish_time - start_time)}')
+            return resoult
+        return _wrapper
+    return decorator
 
 
 def print_spases_line():
@@ -130,3 +132,7 @@ def mix_in(*mixins):
 
 def pickling(class_be_decorated):
     return mix_in(PickleMixin)(class_be_decorated)
+
+
+def split_by_evenodd_position(sequence) -> tuple:
+    return sequence[::2], sequence[1::2]
