@@ -80,10 +80,10 @@ class JustFinalRecurent(NonComplimentalRecurent):
             inputs_values_list, time_limit, just_final=True,
         )
 
-    def count_error(self, dataset) -> float:
+    def count_error(self, dataset, time_limit=None) -> float:
         cases_errors = list()
         for case_inputs, case_outputs in dataset:
-            real_outputs = self.get_outputs(case_inputs)
+            real_outputs = self.get_outputs(case_inputs, time_limit)
             max_unit_error = self.max_unit_error(case_outputs, real_outputs)
             cases_errors.append(max_unit_error)
         self.error = max(cases_errors)
@@ -92,7 +92,7 @@ class JustFinalRecurent(NonComplimentalRecurent):
 class LevelsRecurent(NonComplimentalRecurent):
     def __init__(self, structure, control_couples_number=1, levels_number=512):
         super().__init__(structure, control_couples_number)
-        self.essential_attrs.append(levels_number)
+        self.essential_attrs['levels_number'] = levels_number
         self.levels_number = levels_number
 
     def get_outputs(self, inputs_values_list, time_limit=None) -> str:
@@ -103,7 +103,7 @@ class LevelsRecurent(NonComplimentalRecurent):
     def _numbers_to_level_chars_string(self, numbers_list: list) -> str:
         chars_list = list()
         for number in numbers_list:
-            char =  chr(round((number + 1) / 2 * self.levels_number))
+            char = chr(round((number + 1) / 2 * self.levels_number))
             chars_list.append(char)
         return str().join(chars_list)
 
@@ -119,7 +119,10 @@ class ChatBot(LevelsRecurent):
     def __init__(self, structure, control_couples_number=1, charset=printable):
         super().__init__(structure, control_couples_number)
         self.levels_number = len(charset)
-        self.essential_attrs[-1] = charset
+
+        self.essential_attrs.pop('levels_number')
+        self.essential_attrs['charset'] = charset
+
         self.charset = charset
 
     @staticmethod

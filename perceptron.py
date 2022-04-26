@@ -14,7 +14,7 @@ class Perceptron:
         self.structure = structure
         # self.essential_attrs define neuronet structure...
         # ...for a similar neuronet making
-        self.essential_attrs = [self.structure]
+        self.essential_attrs = dict(structure=self.structure)
 
         self.error = None
 
@@ -98,13 +98,13 @@ class Perceptron:
         )
 
     def copy_with_new_weights(self, weights: list):
-        new_perceptron = self.__class__(*self.essential_attrs)
+        new_perceptron = self.__class__(**self.essential_attrs)
         for position, weight in enumerate(new_perceptron.all_weights):
             weight.value = weights[position]
         return new_perceptron
 
     def copy_with_random_weights(self):
-        return self.__class__(*self.essential_attrs)
+        return self.__class__(**self.essential_attrs)
 
     @property
     def prelast_outputs_number(self) -> int:

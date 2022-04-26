@@ -7,7 +7,7 @@ from perceptron import Perceptron
 class RecurentPerceptron(Perceptron):
     def __init__(self, structure, control_couples_number=1):
         super().__init__(structure)
-        self.essential_attrs.append(control_couples_number)
+        self.essential_attrs['control_couples_number'] = control_couples_number
         self.recurent = True
 
         self.control_couples = list()
