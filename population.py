@@ -4,8 +4,8 @@ from time import time
 from more_itertools import sort_together
 from numpy import mean
 
-from utils import (print_percent, print_spases_line, time_lenght_str,
-                   with_current_process_print,
+from utils import (print_percent, print_spases_line, split_by_evenodd_position,
+                   time_lenght_str, with_current_process_print,
                    with_start_and_finish_time_print)
 
 
@@ -20,7 +20,7 @@ class Population:
 
         self.generations = int(0)
 
-    @with_start_and_finish_time_print
+    @with_start_and_finish_time_print()
     def tich(
         self, dataset: list, mortality=0.4, error=0.25, mutability=0.2,
         time_limit=None, ann_path=None, save_population=False,
@@ -69,7 +69,8 @@ class Population:
     def change_size_to(self, neuronets_number):
         if self.size > neuronets_number:
             self.neuronets = self.neuronets[:neuronets_number]
-        elif self.size < neuronets_number:
+
+        if self.size < neuronets_number:
             size = neuronets_number - self.size
             neuronet = self.neuronet_example
             additional_neuronets = self.__class__(size, neuronet).neuronets
@@ -81,23 +82,19 @@ class Population:
 
     @property
     def best_neuronet(self) -> object:
+        # best resoult is first element in sorted neuronets list 
         return self.neuronets[0]
 
     @property
     def _errors(self) -> list:
         return [neuronet.error for neuronet in self.neuronets]
 
-    def _cross_over(
-        self, first_neuronet, second_neuronet, mutability: float,
-    ) -> object:
-        compliment_weights_couples = zip(
-            first_neuronet.all_weights, second_neuronet.all_weights,
-        )
+    def _cross_over(self, neuronet_1, neuronet_2, mutability: float):
         child_raw_weights = list()
-        for first_weight, second_weight in compliment_weights_couples:
-            child_raw_weight = choice([first_weight, second_weight]).value
+        for couple in zip(neuronet_1.all_weights, neuronet_2.all_weights):
+            child_raw_weight = choice(couple).value
             if uniform(0, 1) < mutability:
-                child_raw_weight = first_weight.value_generator()
+                child_raw_weight = couple[0].value_generator()
             child_raw_weights.append(child_raw_weight)
         return self.neuronet_example.copy_with_new_weights(child_raw_weights)
 
@@ -152,22 +149,19 @@ class Population:
 
     @with_current_process_print('forming...')
     def _form_couples(self, couples_number) -> tuple:
-        first_part = self.neuronets[::2]
-        second_part = self.neuronets[1::2]
+        parts = split_by_evenodd_position(self.neuronets)
 
         half_lenght = int(self.size // 2)
         fuull_passes_number = int(couples_number // half_lenght)
         last_couples_number = int(couples_number % half_lenght)
 
-        number = 1
-        for first_neuronet, second_neuronet in zip(first_part, second_part):
+        for number, couple in enumerate(zip(parts), start=1):
             if (not fuull_passes_number) and (number > last_couples_number):
                 break
             for _number in range(fuull_passes_number):
-                yield (first_neuronet, second_neuronet)
+                yield couple
             if number <= last_couples_number:
-                yield (first_neuronet, second_neuronet)
-            number += 1
+                yield couple
 
     def _print_chart_top(self, dataset, error, time_limit):
         print(
