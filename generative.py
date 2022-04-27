@@ -87,6 +87,7 @@ class JustFinalRecurent(NonComplimentalRecurent):
             max_unit_error = self.max_unit_error(case_outputs, real_outputs)
             cases_errors.append(max_unit_error)
         self.error = max(cases_errors)
+        return self
 
 
 class LevelsRecurent(NonComplimentalRecurent):
@@ -113,6 +114,7 @@ class LevelsRecurent(NonComplimentalRecurent):
             real_string = self.get_outputs(case_inputs, time_limit)
             cases_errors.append(1 - jaro_winkler(waited_string, real_string))
         self.error = mean(cases_errors)
+        return self
 
 
 class ChatBot(LevelsRecurent):

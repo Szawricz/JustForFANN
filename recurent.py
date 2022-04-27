@@ -42,6 +42,7 @@ class RecurentPerceptron(Perceptron):
                 case_errors.append(max_unit_error)
             cases_errors.append(max(case_errors))
         self.error = max(cases_errors)
+        return self
 
     @property
     def control_neurons(self) -> list:
