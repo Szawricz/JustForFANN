@@ -12,6 +12,7 @@ from utils import (print_percent, print_spases_line, split_by_evenodd_position,
 class Population:
     def __init__(self, size: int, neuronet: object):
         self.neuronet_example = neuronet
+        self.neuronets_type = self.neuronet_example.__class__
 
         self.neuronets = list()
         for _item in range(size):
