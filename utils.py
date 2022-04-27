@@ -70,7 +70,7 @@ def count_arrays_product(first_array: list, second_array: list) -> list:
 
 @lru_cache()
 def time_lenght_str(time_lenght: float) -> str:
-    return strftime('%X', gmtime(time))
+    return strftime('%X', gmtime(time_lenght))
 
 
 def measure_execution_time(procedure):
