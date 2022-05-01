@@ -1,4 +1,5 @@
 from functools import lru_cache
+from random import shuffle
 from string import printable
 from time import time
 
@@ -81,6 +82,7 @@ class JustFinalRecurent(NonComplimentalRecurent):
         )
 
     def count_error(self, dataset, time_limit=None) -> float:
+        shuffle(dataset)
         cases_errors = list()
         for case_inputs, case_outputs in dataset:
             real_outputs = self.get_outputs(case_inputs, time_limit)
@@ -109,6 +111,7 @@ class LevelsRecurent(NonComplimentalRecurent):
         return str().join(chars_list)
 
     def count_error(self, dataset, time_limit=None) -> float:
+        shuffle(dataset)
         cases_errors = list()
         for case_inputs, waited_string in dataset:
             real_string = self.get_outputs(case_inputs, time_limit)

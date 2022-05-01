@@ -1,5 +1,5 @@
 from time import time
-
+from random import shuffle
 from neuron import ControlCouple
 from perceptron import Perceptron
 
@@ -33,6 +33,7 @@ class RecurentPerceptron(Perceptron):
         return resoults
 
     def count_error(self, dataset) -> float:
+        shuffle(dataset)
         cases_errors = list()
         for case_inputs, case_outputs in dataset:
             real_outputs = self.get_outputs(case_inputs)
