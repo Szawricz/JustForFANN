@@ -135,4 +135,4 @@ def pickling(class_be_decorated):
 
 
 def split_by_evenodd_position(sequence) -> tuple:
-    return sequence[::2], sequence[1::2]
+    return (sequence[::2], sequence[1::2])
