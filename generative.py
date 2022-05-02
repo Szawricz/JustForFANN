@@ -1,5 +1,4 @@
 from functools import lru_cache
-from random import shuffle
 from string import printable
 from time import time
 
@@ -20,16 +19,6 @@ class NonComplimentalRecurent(RecurentPerceptron):
 
         self.stop_neuron = StopNeuron(inputs_number)
         self.continue_neuron = ContinueNeuron(inputs_number)
-
-    def _set_biases_inversed(self):
-        for neuron in self.all_neurons:
-            if isinstance(neuron, BiasNeuron):
-                neuron.inversed = True
-    
-    def _set_biases_default(self):
-        for neuron in self.all_neurons:
-            if isinstance(neuron, BiasNeuron):
-                neuron.inversed = False
 
     def get_outputs(
         self, inputs_values_list, time_limit=None, just_final=False,
@@ -74,6 +63,17 @@ class NonComplimentalRecurent(RecurentPerceptron):
     def all_neurons(self) -> list:
         return super().all_neurons + [self.stop_neuron, self.continue_neuron]
 
+    def _set_biases_inversed(self):
+        for neuron in self.all_neurons:
+            if isinstance(neuron, BiasNeuron):
+                neuron.inversed = True
+    
+    def _set_biases_default(self):
+        for neuron in self.all_neurons:
+            if isinstance(neuron, BiasNeuron):
+                neuron.inversed = False
+
+
 
 class JustFinalRecurent(NonComplimentalRecurent):
     def get_outputs(self, inputs_values_list, time_limit=None):
@@ -82,7 +82,6 @@ class JustFinalRecurent(NonComplimentalRecurent):
         )
 
     def count_error(self, dataset, time_limit=None) -> float:
-        shuffle(dataset)
         cases_errors = list()
         for case_inputs, case_outputs in dataset:
             real_outputs = self.get_outputs(case_inputs, time_limit)
@@ -98,6 +97,14 @@ class LevelsRecurent(NonComplimentalRecurent):
         self.essential_attrs['levels_number'] = levels_number
         self.levels_number = levels_number
 
+    def count_error(self, dataset, time_limit=None) -> float:
+        cases_errors = list()
+        for case_inputs, waited_string in dataset:
+            real_string = self.get_outputs(case_inputs, time_limit)
+            cases_errors.append(1 - jaro_winkler(waited_string, real_string))
+        self.error = mean(cases_errors)
+        return self
+
     def get_outputs(self, inputs_values_list, time_limit=None) -> str:
         raw_outputs = super().get_outputs(inputs_values_list, time_limit)
         numbers_list = [number.pop() for number in raw_outputs]
@@ -110,15 +117,6 @@ class LevelsRecurent(NonComplimentalRecurent):
             chars_list.append(char)
         return str().join(chars_list)
 
-    def count_error(self, dataset, time_limit=None) -> float:
-        shuffle(dataset)
-        cases_errors = list()
-        for case_inputs, waited_string in dataset:
-            real_string = self.get_outputs(case_inputs, time_limit)
-            cases_errors.append(1 - jaro_winkler(waited_string, real_string))
-        self.error = mean(cases_errors)
-        return self
-
 
 class ChatBot(LevelsRecurent):
     def __init__(self, structure, control_couples_number=1, charset=printable):
@@ -130,6 +128,11 @@ class ChatBot(LevelsRecurent):
 
         self.charset = charset
 
+    def get_outputs(self, input_string, time_limit=None) -> str:
+        numbers_list = self._string_to_numbers_list(input_string)
+        inputs_list = [[number] for number in numbers_list]
+        return super().get_outputs(inputs_list, time_limit)
+
     @staticmethod
     def _string_to_numbers_list(string: str) -> list:
         return [ord(character) for character in string]
@@ -140,8 +143,3 @@ class ChatBot(LevelsRecurent):
             index = round((number + 1) / 2 * (self.levels_number - 1))
             chars_list.append(self.charset[index])
         return str().join(chars_list)
-
-    def get_outputs(self, input_string, time_limit=None) -> str:
-        numbers_list = self._string_to_numbers_list(input_string)
-        inputs_list = [[number] for number in numbers_list]
-        return super().get_outputs(inputs_list, time_limit)

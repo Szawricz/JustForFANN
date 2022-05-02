@@ -1,5 +1,5 @@
 from time import time
-from random import shuffle
+
 from neuron import ControlCouple
 from perceptron import Perceptron
 
@@ -15,12 +15,6 @@ class RecurentPerceptron(Perceptron):
             couple = ControlCouple(self.prelast_outputs_number)
             self.control_couples.append(couple)
 
-    def _change_weights(self):
-        for couple in self.control_couples:
-            number, value = couple.get_outputs(self.prelast_outputs)
-            index = round((number + 1) / 2 * (self.weights_number - 1))
-            self.all_weights[index].value = value
-
     def get_outputs(self, inputs_values_list, time_limit=None):
         start_time = time()
         resoults = list()
@@ -33,7 +27,6 @@ class RecurentPerceptron(Perceptron):
         return resoults
 
     def count_error(self, dataset) -> float:
-        shuffle(dataset)
         cases_errors = list()
         for case_inputs, case_outputs in dataset:
             real_outputs = self.get_outputs(case_inputs)
@@ -55,3 +48,9 @@ class RecurentPerceptron(Perceptron):
     @property
     def all_neurons(self) -> list:
         return super().all_neurons + self.control_neurons
+
+    def _change_weights(self):
+        for couple in self.control_couples:
+            number, value = couple.get_outputs(self.prelast_outputs)
+            index = round((number + 1) / 2 * (self.weights_number - 1))
+            self.all_weights[index].value = value

@@ -1,4 +1,4 @@
-from random import choice, uniform
+from random import choice, shuffle, uniform
 from time import time
 
 from more_itertools import sort_together
@@ -158,6 +158,8 @@ class Population:
 
         for number, neuronet in enumerate(neuronets, start=1):
             print_percent('errors counting:', number, neuronets)
+            if self.neuronet_example.recurent:
+                shuffle(dataset)
             neuronet.count_error(dataset, time_limit)
             print_spases_line()
 
