@@ -55,6 +55,9 @@ class InternalLayerNeuron(AbstractNeuron):
         super().__init__(
             inputs_number=inputs_number,
             transmition_function=heaviside,
+
+            # You can use 'generate_sign' instead 'generate_uniform' here...
+            # ... to do errors counting faster but it slower a tiching.
             value_generator=generate_sign,
         )
 

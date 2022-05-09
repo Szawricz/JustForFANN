@@ -9,7 +9,7 @@ chat_bot = ChatBot(
     control_couples_number=10,
 )
 
-chat_bot = ChatBot.load_from_file('/home/user/Desktop/My_folder/brain.ann')
+# chat_bot = ChatBot.load_from_file('/home/user/Desktop/My_folder/brain.ann')
 
 dataset = [
     ['Hey!', 'Hallo!'],
@@ -30,7 +30,6 @@ if __name__ == '__main__':
         size=20,
         time_limit=60,
         ann_path='/home/user/Desktop/My_folder/brain.ann',
-        save_population=True,
     )
 
     while True:

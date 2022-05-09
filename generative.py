@@ -74,7 +74,6 @@ class NonComplimentalRecurent(RecurentPerceptron):
                 neuron.inversed = False
 
 
-
 class JustFinalRecurent(NonComplimentalRecurent):
     def get_outputs(self, inputs_values_list, time_limit=None):
         return super().get_outputs(
