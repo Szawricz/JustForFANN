@@ -17,6 +17,25 @@ class PickleMixin:
             return load(file)
 
 
+class Scaler:
+    def __init__(self, min_value, max_value, min_output=-1, max_output=1):
+        if min_value >= max_value or min_output >= max_output:
+            raise ValueError('An argument is incorrect')
+
+        self.min_value = min_value
+        self.min_output = min_output
+
+        self.coefficient = abs(
+            (max_output - min_output)/(max_value - min_value),
+        )
+
+    def to_neuronet_format(self, value: float) -> float:
+        return self.min_output + value * self.coefficient
+
+    def from_neuronet_format(self, value: float) -> float:
+        return self.min_value + value / self.coefficient
+
+
 @lru_cache()
 def sig(neuro_sum: float) -> float:
     return 2 / (1 + exp(-neuro_sum)) - 1
