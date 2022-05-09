@@ -15,7 +15,8 @@ class Perceptron:
         # self.essential_attrs define neuronet structure...
         # ...for a similar neuronet making
         self.essential_attrs = dict(structure=self.structure)
-
+        
+        self.parrents = tuple()
         self.error = None
 
         self.layers = list()
@@ -81,7 +82,7 @@ class Perceptron:
         if hasattr(self, 'population'):
             population = self.population
 
-            # if population is bigger or less then given size 
+            # if population is bigger or less then given size
             population.change_size_to(size)
 
             # delete population from the neuronet for easify its learning
