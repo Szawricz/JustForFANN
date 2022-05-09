@@ -1,7 +1,7 @@
 from random import choice, shuffle, uniform
 from time import time
 
-from more_itertools import sort_together
+from operator import attrgetter
 from numpy import mean
 
 from utils import (print_percent, print_spases_line, split_by_evenodd_position,
@@ -106,24 +106,29 @@ class Population:
             if uniform(0, 1) < mutability:
                 child_raw_weight = couple[0].value_generator()
             child_raw_weights.append(child_raw_weight)
-        return self.neuronet_example.copy_with_new_weights(child_raw_weights)
+        child = self.neuronet_example.copy_with_new_weights(child_raw_weights)
+        child.parrents = (neuronet_1, neuronet_2,)
+        return child
+
+    def _closely_related(self, net_1, net_2) -> bool:
+        child_parrent = (net_1 in net_2.parrents) or (net_2 in net_1.parrents)
+        siblings = bool(set(net_1.parrents).intersection(set(net_2.parrents)))
+        return child_parrent or siblings
 
     @with_current_process_print('forming couples...')
     def _form_couples(self, couples_number) -> tuple:
-        parts = split_by_evenodd_position(self.neuronets)
-
-        half_lenght = int(self.size // 2)
-
-        fuull_passes_number = int(couples_number // half_lenght)
-        last_couples_number = int(couples_number % half_lenght)
-
-        for number, couple in enumerate(zip(*parts), start=1):
-            if (not fuull_passes_number) and (number > last_couples_number):
-                break
-            for _number in range(fuull_passes_number):
-                yield couple
-            if number <= last_couples_number:
-                yield couple
+        made_couples_number = 0
+        while not (made_couples_number == couples_number):
+            for position, neuronet in enumerate(self.neuronets, start=1):
+                if position == self.size:
+                    break
+                first, second = neuronet, self.neuronets[position]
+                if self._closely_related(first, second):
+                    continue
+                yield (first, second,)
+                made_couples_number += 1
+                if made_couples_number == couples_number:
+                    break
 
     @with_current_process_print('saving best neuronet...')
     def _save_best_neuronet(self, ann_path: str, with_population: bool):
@@ -139,7 +144,7 @@ class Population:
             del self.best_neuronet.population
 
     def _sort_by_errors(self):
-        self.neuronets = list(sort_together([self._errors, self.neuronets])[1])
+        self.neuronets.sort(key=attrgetter('error'))
 
     @property
     def _neuronets_without_error(self) -> list:
@@ -153,12 +158,13 @@ class Population:
 
     def _count_errors(self, dataset, time_limit=None):
         neuronets = self.neuronets
-        if not self.neuronet_example.recurent:
+        is_recurent = self.neuronet_example.recurent
+        if not is_recurent:
             neuronets = self._neuronets_without_error
 
         for number, neuronet in enumerate(neuronets, start=1):
             print_percent('errors counting:', number, neuronets)
-            if self.neuronet_example.recurent:
+            if is_recurent:
                 shuffle(dataset)
             neuronet.count_error(dataset, time_limit)
             print_spases_line()

@@ -15,7 +15,7 @@ class Perceptron:
         # self.essential_attrs define neuronet structure...
         # ...for a similar neuronet making
         self.essential_attrs = dict(structure=self.structure)
-        
+
         self.parrents = tuple()
         self.error = None
 
